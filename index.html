@@ -1,0 +1,3172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Boundary Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Karla:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --plum: #342632;
+    --plum-light: #4a3848;
+    --olive: #42450b;
+    --terracotta: #c36b29;
+    --gold: #ca9657;
+    --mauve: #ab7979;
+    --cream: #daba9c;
+    --lavender: #a87f9a;
+
+    --bg: #f8f1e9;
+    --surface: #ffffff;
+    --text: #342632;
+    --text-soft: #6b5b66;
+    --border: #e8dccb;
+    --text-on-dark: #f5e9dc;
+    --text-on-dark-soft: rgba(245, 233, 220, 0.72);
+
+    --font-display: 'Fraunces', serif;
+    --font-body: 'Karla', sans-serif;
+
+    --radius: 18px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-body);
+    color: var(--text);
+    background: linear-gradient(160deg, #3e2c3c 0%, var(--plum) 50%, #2b1f29 100%);
+    min-height: 100vh;
+  }
+
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 32px 16px 64px;
+    line-height: 1.6;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 640px;
+  }
+
+  /* ---------- Header ---------- */
+  .header {
+    text-align: center;
+    margin-bottom: 18px;
+  }
+
+  .header .vine {
+    width: 100%;
+    max-width: 260px;
+    height: auto;
+    margin: 0 auto 6px;
+    display: block;
+    opacity: 0.9;
+  }
+
+  .header h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.55rem;
+    margin: 0;
+    color: var(--gold);
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 600px) {
+    .header h1 {
+      font-size: 1.1rem;
+      white-space: normal;
+    }
+  }
+
+  .header p {
+    font-size: 0.95rem;
+    color: var(--text-on-dark-soft);
+    margin: 6px 0 0;
+    font-style: italic;
+  }
+
+  /* ---------- Progress ---------- */
+  .progress-wrap {
+    margin: 0 0 16px;
+    padding: 0 4px;
+  }
+
+  .progress-track {
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--terracotta));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--text-on-dark-soft);
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  /* ---------- Card ---------- */
+  .card {
+    background: #efdcd9;
+    border-radius: var(--radius);
+    box-shadow: 0 8px 30px rgba(52, 38, 50, 0.08);
+    padding: 22px 26px;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, rgba(202, 150, 87, 0.15), transparent 70%);
+    pointer-events: none;
+  }
+
+  .step { display: none; }
+  .step.active {
+    display: block;
+    animation: fadeIn 0.45s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-eyebrow {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--mauve);
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+
+  .step h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.5rem;
+    margin: 0 0 8px;
+    color: var(--olive);
+    line-height: 1.3;
+  }
+
+  .step .step-helper {
+    color: var(--text-soft);
+    font-size: 0.95rem;
+    margin: 0 0 14px;
+  }
+
+  /* ---------- Options ---------- */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  /* Grid layout for steps with many short-ish options (e.g. Step 1) */
+  .options.options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .options.options-grid .option-btn {
+    height: 100%;
+  }
+
+  @media (max-width: 480px) {
+    .options.options-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .option-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    text-align: left;
+    padding: 10px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: #fffdfb;
+    font-family: var(--font-body);
+    font-size: 0.98rem;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .option-btn:hover {
+    border-color: var(--gold);
+    background: #fffaf3;
+  }
+
+  .option-btn.selected {
+    border-color: var(--terracotta);
+    background: #fbece8;
+    box-shadow: 0 0 0 1px var(--terracotta);
+  }
+
+  .option-btn .check {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+    margin-left: 12px;
+    position: relative;
+    transition: all 0.18s ease;
+  }
+
+  .option-btn.selected .check {
+    border-color: var(--terracotta);
+    background: var(--terracotta);
+  }
+
+  .option-btn.selected .check::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  .option-btn.multi .check {
+    border-radius: 4px;
+  }
+
+  .option-btn.multi.selected .check::after {
+    border-radius: 1px;
+  }
+
+  /* ---------- Text input ---------- */
+  textarea.field, input.field {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 0.98rem;
+    color: var(--text);
+    background: #fffdfb;
+    resize: vertical;
+    min-height: 110px;
+    transition: border-color 0.18s ease;
+  }
+
+  textarea.field:focus, input.field:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+
+  .field-hint {
+    font-size: 0.82rem;
+    color: var(--text-soft);
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  /* ---------- Buttons / nav ---------- */
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 18px;
+    gap: 12px;
+  }
+
+  .btn {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .btn-primary {
+    background: var(--terracotta);
+    color: #fff;
+    flex: 1;
+  }
+
+  .btn-primary:hover { background: #ad5a1f; }
+
+  .btn-primary:disabled {
+    background: #d4b4c0;
+    color: #b8a896;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-soft);
+    border: 1.5px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--mauve);
+    color: var(--text);
+  }
+
+  .btn-text {
+    background: none;
+    border: none;
+    color: var(--mauve);
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 4px 0;
+  }
+
+  /* ---------- Safety pause screen ---------- */
+  .safety-screen {
+    text-align: center;
+  }
+
+  .safety-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 16px;
+    display: block;
+  }
+
+  .safety-screen h2 {
+    color: var(--plum);
+  }
+
+  .safety-screen .safety-text {
+    background: #f6eef4;
+    border: 1px solid var(--lavender);
+    border-radius: var(--radius-sm);
+    padding: 18px 20px;
+    color: var(--text);
+    font-size: 0.96rem;
+    text-align: left;
+    margin: 16px 0 24px;
+  }
+
+  .safety-screen .resources {
+    font-size: 0.88rem;
+    color: var(--text-soft);
+    text-align: left;
+    margin-bottom: 8px;
+  }
+
+  /* ---------- Loading ---------- */
+  .loading-screen {
+    text-align: center;
+    padding: 40px 0;
+  }
+
+  .loading-screen .spinner {
+    width: 44px;
+    height: 44px;
+    margin: 0 auto 20px;
+    border: 3px solid var(--border);
+    border-top-color: var(--terracotta);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-screen p {
+    color: var(--text-soft);
+    font-style: italic;
+    font-size: 0.95rem;
+  }
+
+  /* ---------- Results ---------- */
+  .results .step-eyebrow { margin-bottom: 4px; }
+
+  .result-hero {
+    background: linear-gradient(145deg, #fbece8, #f5dcd6);
+    border: 1px solid var(--cream);
+    border-radius: var(--radius-sm);
+    padding: 22px 22px 20px;
+    margin: 18px 0 6px;
+    position: relative;
+  }
+
+  .result-hero .quote-mark {
+    font-family: var(--font-display);
+    font-size: 2.6rem;
+    color: var(--gold);
+    line-height: 0.5;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .result-hero .script-text {
+    font-family: var(--font-display);
+    font-size: 1.18rem;
+    color: var(--plum);
+    line-height: 1.55;
+    font-weight: 400;
+    margin: 0;
+  }
+
+  .result-hero .script-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--mauve);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .copy-btn {
+    margin-top: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--plum);
+    color: #fff;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s ease;
+  }
+
+  .copy-btn:hover { background: #4a3848; }
+
+  .copy-btn.copied { background: var(--olive); }
+
+  .use-btn {
+    margin-top: -6px;
+    margin-bottom: 16px;
+    background: var(--olive);
+  }
+
+  .use-btn:hover { background: #565a13; }
+
+  .use-btn.copied { background: var(--plum); }
+
+  .you-asking {
+    background: #f4f0e4;
+    border-radius: var(--radius-sm);
+    padding: 16px 18px;
+    margin: 18px 0;
+    font-size: 0.95rem;
+    color: var(--text);
+    border-left: 3px solid var(--gold);
+  }
+
+  .you-asking .label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--olive);
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  /* ---------- Accordion ---------- */
+  .accordion {
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .accordion-item {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 16px 2px;
+    text-align: left;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--plum);
+  }
+
+  .accordion-header .icon-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .accordion-header .leaf {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: var(--olive);
+  }
+
+  .accordion-header .chev {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    transition: transform 0.25s ease;
+    color: var(--text-soft);
+  }
+
+  .accordion-item.open .chev {
+    transform: rotate(180deg);
+  }
+
+  .accordion-body {
+    display: none;
+    padding: 0 2px 18px 32px;
+    font-size: 0.94rem;
+    color: var(--text);
+  }
+
+  .accordion-item.open .accordion-body {
+    display: block;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .accordion-body p { margin: 0 0 12px; }
+  .accordion-body p:last-child { margin-bottom: 0; }
+
+  .accordion-body .sub-label {
+    font-weight: 700;
+    color: var(--mauve);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .accordion-body .script-block {
+    background: #faf6ef;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--plum);
+    margin-bottom: 14px;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .accordion-body ul {
+    padding-left: 20px;
+    margin: 0 0 12px;
+  }
+
+  .accordion-body li { margin-bottom: 6px; }
+
+  .pushback-pair {
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .pushback-pair:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .pushback-pair .their-line {
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    font-style: italic;
+    margin-bottom: 4px;
+  }
+
+  /* ---------- Strengthener ---------- */
+  .strengthener {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .strengthener .step-eyebrow { margin-bottom: 8px; }
+
+  .strengthener-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  @media (max-width: 480px) {
+    .strengthener-grid { grid-template-columns: 1fr; }
+  }
+
+  .strength-btn {
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: #fffdfb;
+    cursor: pointer;
+    color: var(--text);
+    transition: all 0.18s ease;
+    text-align: left;
+  }
+
+  .strength-btn:hover {
+    border-color: var(--lavender);
+    background: #fdf6fb;
+  }
+
+  .strength-btn:disabled {
+    opacity: 0.5;
+    cursor: wait;
+  }
+
+  .restart-row {
+    text-align: center;
+    margin-top: 28px;
+  }
+
+  /* ---------- Error ---------- */
+  .error-box {
+    background: #f9e6e1;
+    border: 1px solid #d99c8a;
+    border-radius: var(--radius-sm);
+    padding: 16px 18px;
+    color: #7a3424;
+    font-size: 0.92rem;
+    margin: 16px 0;
+  }
+
+  /* ---------- Footer ---------- */
+  .footer {
+    text-align: center;
+    margin-top: 28px;
+  }
+
+  .footer-banner {
+    background: var(--olive);
+    color: var(--gold);
+    border-radius: 999px;
+    padding: 9px 20px;
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 auto 10px;
+  }
+
+  .footer-banner .sep {
+    color: var(--cream);
+    opacity: 0.7;
+    font-size: 0.65rem;
+  }
+
+  .footer-credit {
+    font-size: 0.82rem;
+    color: var(--text-on-dark-soft);
+    font-style: italic;
+    margin: 0;
+  }
+
+  .footer .heart {
+    color: var(--terracotta);
+  }
+
+  /* ---------- Reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .step.active, .accordion-body, .result-hero { animation: none !important; }
+    * { transition: none !important; }
+  }
+
+  /* ---------- Focus visibility ---------- */
+  button:focus-visible, textarea:focus-visible, input:focus-visible {
+    outline: 2px solid var(--terracotta);
+    outline-offset: 2px;
+  }
+
+  /* ---------- Export / Print ---------- */
+  .export-row {
+    margin-top: 18px;
+    text-align: center;
+  }
+
+  .export-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    color: var(--plum);
+    border: 1.5px solid var(--plum);
+    padding: 10px 22px;
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .export-btn:hover {
+    background: var(--plum);
+    color: #fff;
+  }
+
+  #printArea { display: none; }
+
+  @media print {
+    body * { visibility: hidden; }
+    #printArea, #printArea * { visibility: visible; }
+    #printArea {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 24px;
+      color: #342632;
+      font-family: var(--font-body);
+    }
+
+    .print-header h1 {
+      font-family: var(--font-display);
+      font-size: 1.7rem;
+      margin: 0 0 4px;
+      color: var(--plum);
+    }
+
+    .print-header .print-sub {
+      font-size: 0.85rem;
+      color: var(--text-soft);
+      font-style: italic;
+      margin: 0 0 24px;
+    }
+
+    .print-section {
+      margin-bottom: 18px;
+      page-break-inside: avoid;
+    }
+
+    .print-section h2 {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      color: var(--plum);
+      margin: 0 0 8px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 4px;
+    }
+
+    .print-section p {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin: 0 0 10px;
+    }
+
+    .print-script {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 1.1rem;
+      background: #faf6ef;
+      padding: 12px 14px;
+      border-radius: 8px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <svg class="vine" viewBox="0 0 320 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M6 18 C 50 4, 90 32, 134 18 C 160 9, 160 9, 160 9 C 160 9, 160 9, 186 18 C 230 32, 270 4, 314 18" stroke="#daba9c" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.6"/>
+      <!-- flower 1 -->
+      <g transform="translate(57,14)">
+        <circle cx="-4" cy="0" r="3.2" fill="#c36b29" opacity="0.9"/>
+        <circle cx="4" cy="0" r="3.2" fill="#c36b29" opacity="0.9"/>
+        <circle cx="0" cy="-4" r="3.2" fill="#c36b29" opacity="0.9"/>
+        <circle cx="0" cy="4" r="3.2" fill="#c36b29" opacity="0.9"/>
+        <circle cx="0" cy="0" r="2" fill="#ca9657"/>
+      </g>
+      <!-- flower 2 -->
+      <g transform="translate(123,21)">
+        <circle cx="-4" cy="0" r="3.2" fill="#a87f9a" opacity="0.9"/>
+        <circle cx="4" cy="0" r="3.2" fill="#a87f9a" opacity="0.9"/>
+        <circle cx="0" cy="-4" r="3.2" fill="#a87f9a" opacity="0.9"/>
+        <circle cx="0" cy="4" r="3.2" fill="#a87f9a" opacity="0.9"/>
+        <circle cx="0" cy="0" r="2" fill="#daba9c"/>
+      </g>
+      <!-- center bud -->
+      <circle cx="160" cy="9" r="3" fill="#ca9657"/>
+      <!-- flower 3 -->
+      <g transform="translate(197,21)">
+        <circle cx="-4" cy="0" r="3.2" fill="#ca9657" opacity="0.9"/>
+        <circle cx="4" cy="0" r="3.2" fill="#ca9657" opacity="0.9"/>
+        <circle cx="0" cy="-4" r="3.2" fill="#ca9657" opacity="0.9"/>
+        <circle cx="0" cy="4" r="3.2" fill="#ca9657" opacity="0.9"/>
+        <circle cx="0" cy="0" r="2" fill="#c36b29"/>
+      </g>
+      <!-- flower 4 -->
+      <g transform="translate(263,14)">
+        <circle cx="-4" cy="0" r="3.2" fill="#c36b29" opacity="0.9"/>
+        <circle cx="4" cy="0" r="3.2" fill="#c36b29" opacity="0.9"/>
+        <circle cx="0" cy="-4" r="3.2" fill="#c36b29" opacity="0.9"/>
+        <circle cx="0" cy="4" r="3.2" fill="#c36b29" opacity="0.9"/>
+        <circle cx="0" cy="0" r="2" fill="#ca9657"/>
+      </g>
+    </svg>
+    <h1>Granny Wisdom, Hippie Vibes Boundaries Builder</h1>
+    <p>Let's find the words that fit.</p>
+  </div>
+
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-label">
+      <span id="progressText">Getting started</span>
+      <span id="progressCount"></span>
+    </div>
+  </div>
+
+  <div class="card" id="card">
+    <!-- Steps injected by JS -->
+  </div>
+
+  <div class="footer">
+    <div class="footer-banner">
+      <span>Wisdom is Timeless</span>
+      <span class="sep">&#10070;</span>
+      <span>Love is Limitless</span>
+      <span class="sep">&#10070;</span>
+      <span>Vibes are Everything</span>
+    </div>
+    <p class="footer-credit"><span class="heart">♥</span> A Happy Hippie &middot; Boundary Builder</p>
+  </div>
+
+</div>
+
+<!-- Print-only export view, populated by exportBoundary() -->
+<div id="printArea"></div>
+
+<script>
+// ============================================================
+// Boundary Builder - Template Engine
+// Generates boundary scripts entirely client-side, in Robin's voice.
+// No API calls. Single-session, no storage.
+// ============================================================
+
+// ------------------------------------------------------------
+// Helpers
+// ------------------------------------------------------------
+
+function pick(arr, seed) {
+  // Deterministic-ish pick based on a seed string, so repeated
+  // generations for the same inputs feel stable but vary across
+  // different inputs.
+  if (arr.length === 1) return arr[0];
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  }
+  return arr[hash % arr.length];
+}
+
+function pickMany(arr, n, seed) {
+  // Pick up to n items, rotating starting point based on seed
+  if (arr.length <= n) return arr.slice();
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  }
+  const start = hash % arr.length;
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    out.push(arr[(start + i) % arr.length]);
+  }
+  return out;
+}
+
+function lowerFirst(str) {
+  if (!str) return str;
+  // Don't lowercase a standalone "I" (as in "I always..." or "I've...")
+  if (/^I([\s'’]|$)/.test(str)) return str;
+  return str.charAt(0).toLowerCase() + str.slice(1);
+}
+
+function trimEnd(str) {
+  return str.replace(/[\s.]+$/, '');
+}
+
+// Convert third-person pronouns ("they/them/their") at the start of a
+// situation description to second-person ("you/you/your"), since boundary
+// scripts are spoken directly TO the person. Only handles the common
+// patterns members are likely to type ("They X", "They're X").
+// Falls back to leaving text unchanged if no clear pattern matches.
+// Common ways members refer to the other person by relationship rather
+// than a pronoun ("my sister keeps...", "my boss always..."). When one of
+// these opens the sentence, it IS the person we're talking to, so it gets
+// replaced with "you" rather than being left in as a confusing third party.
+const RELATION_WORDS = [
+  'mother-in-law', 'father-in-law', 'sister-in-law', 'brother-in-law',
+  'mother in law', 'father in law', 'sister in law', 'brother in law',
+  'ex-husband', 'ex-wife', 'ex-boyfriend', 'ex-girlfriend', 'ex-partner',
+  'best friend', 'grandmother', 'grandfather', 'grandparent',
+  'stepmother', 'stepfather', 'stepmom', 'stepdad', 'stepsister', 'stepbrother',
+  'half-sister', 'half-brother', 'half sister', 'half brother',
+  'mom', 'mum', 'mommy', 'mother', 'dad', 'daddy', 'father',
+  'sister', 'brother', 'sibling', 'husband', 'wife', 'spouse', 'partner',
+  'boyfriend', 'girlfriend', 'son', 'daughter', 'child', 'kid',
+  'friend', 'roommate', 'housemate', 'boss', 'manager', 'supervisor',
+  'coworker', 'co-worker', 'colleague', 'client', 'customer',
+  'employee', 'employer', 'assistant', 'intern', 'therapist', 'doctor',
+  'grandma', 'grandpa', 'aunt', 'uncle', 'cousin', 'nephew', 'niece',
+  'neighbor', 'landlord', 'tenant', 'ex',
+];
+
+// Allow one optional descriptive word before the relation word, so "my new
+// boss", "my older sister", "my ex roommate" etc. are still recognized -
+// the whole match (including that word) gets collapsed to "you".
+const RELATION_PATTERN = new RegExp(
+  '^(my\\s+)(?:[a-z]+\\s+)?(?:' +
+    RELATION_WORDS
+      .slice()
+      .sort((a, b) => b.length - a.length)
+      .map((w) => w.replace(/[-\s]/g, '[-\\s]'))
+      .join('|') +
+  ')\\b',
+  'i'
+);
+
+function shiftToSecondPerson(str) {
+  if (!str) return str;
+  let out = str;
+
+  // "My sister keeps..." / "My new boss always..." -> "You keep..." /
+  // "You always...". Must run before the pronoun passes below, since "my
+  // sister" doesn't contain a pronoun to catch.
+  out = out.replace(RELATION_PATTERN, (m, myPart) => (/^M/.test(myPart) ? 'You' : 'you'));
+
+  // Handle contractions first
+  out = out.replace(/\bthey're\b/gi, (m) => m[0] === 'T' ? 'You\'re' : 'you\'re');
+  out = out.replace(/\bthey've\b/gi, (m) => m[0] === 'T' ? 'You\'ve' : 'you\'ve');
+  out = out.replace(/\bthey'll\b/gi, (m) => m[0] === 'T' ? 'You\'ll' : 'you\'ll');
+  out = out.replace(/\bthey'd\b/gi, (m) => m[0] === 'T' ? 'You\'d' : 'you\'d');
+
+  // Members also commonly describe the other person with "she/he/her/him/his",
+  // so convert those the same way. Contractions and auxiliary verbs are handled
+  // first since "her"/"his" are ambiguous (object vs. possessive) once they're
+  // turned into bare "you"/"your".
+  out = out.replace(/\b(she|he)'s\b/gi, (m) => /^[A-Z]/.test(m) ? 'You\'re' : 'you\'re');
+  out = out.replace(/\b(she|he)'ll\b/gi, (m) => /^[A-Z]/.test(m) ? 'You\'ll' : 'you\'ll');
+  out = out.replace(/\b(she|he)'d\b/gi, (m) => /^[A-Z]/.test(m) ? 'You\'d' : 'you\'d');
+  out = out.replace(/\b(she|he) is\b/gi, (m) => /^[A-Z]/.test(m) ? 'You are' : 'you are');
+  out = out.replace(/\b(she|he) was\b/gi, (m) => /^[A-Z]/.test(m) ? 'You were' : 'you were');
+  out = out.replace(/\b(she|he) has\b/gi, (m) => /^[A-Z]/.test(m) ? 'You have' : 'you have');
+  out = out.replace(/\b(she|he) does\b/gi, (m) => /^[A-Z]/.test(m) ? 'You do' : 'you do');
+  out = out.replace(/\b(she|he) doesn't\b/gi, (m) => /^[A-Z]/.test(m) ? 'You don\'t' : 'you don\'t');
+  out = out.replace(/\b(she|he) wasn't\b/gi, (m) => /^[A-Z]/.test(m) ? 'You weren\'t' : 'you weren\'t');
+  out = out.replace(/\b(she|he) hasn't\b/gi, (m) => /^[A-Z]/.test(m) ? 'You haven\'t' : 'you haven\'t');
+
+  // Whole-word replacements
+  out = out.replace(/\bthey\b/g, 'you');
+  out = out.replace(/\bThey\b/g, 'You');
+  out = out.replace(/\bthem\b/g, 'you');
+  out = out.replace(/\bThem\b/g, 'You');
+  out = out.replace(/\btheir\b/g, 'your');
+  out = out.replace(/\bTheir\b/g, 'Your');
+  out = out.replace(/\btheirs\b/g, 'yours');
+  out = out.replace(/\bTheirs\b/g, 'Yours');
+
+  // "she"/"he" are always subject pronouns, so they map cleanly to "you".
+  out = out.replace(/\bshe\b/g, 'you');
+  out = out.replace(/\bShe\b/g, 'You');
+  out = out.replace(/\bhe\b/g, 'you');
+  out = out.replace(/\bHe\b/g, 'You');
+
+  // "him" is always an object pronoun -> "you".
+  out = out.replace(/\bhim\b/g, 'you');
+  out = out.replace(/\bHim\b/g, 'You');
+
+  // "her" and "his" are ambiguous (object vs. possessive determiner), but in
+  // situation descriptions they're overwhelmingly possessive ("her religion",
+  // "his opinions"), so default to "your". Worst case the member tweaks one word.
+  out = out.replace(/\bher\b/g, 'your');
+  out = out.replace(/\bHer\b/g, 'Your');
+  out = out.replace(/\bhis\b/g, 'your');
+  out = out.replace(/\bHis\b/g, 'Your');
+  out = out.replace(/\bhers\b/g, 'yours');
+  out = out.replace(/\bHers\b/g, 'Yours');
+
+  // "they/she/he/my-mom X" -> "you X" needs verb agreement fix for common
+  // cases: "you criticizes" -> "you criticize" (3rd person -s dropped for
+  // "you"). An adverb is often sandwiched in there too ("you always tells
+  // me" -> "you always tell me"), so it's allowed (and skipped) between
+  // "you" and the verb.
+  const FOLLOWING_ADVERBS = ['always', 'constantly', 'never', 'often', 'frequently', 'repeatedly', 'continually', 'usually', 'regularly', 'sometimes', 'still', 'also', 'just'];
+  const verbAgreementPattern = new RegExp(`\\b(you|You)(\\s+(?:${FOLLOWING_ADVERBS.join('|')}))?\\s+(\\w+)s\\b`, 'g');
+  out = out.replace(verbAgreementPattern, (full, pronoun, adverb, verb) => {
+    // Don't touch words that are correct with -s as "you" (rare, but be safe
+    // for words like "focus", "discuss" which end in s naturally as base form,
+    // or adverbs like "always"/"sometimes" that happen to end in "s" and could
+    // get caught here if nothing follows them)
+    const irregular = ['focus', 'discuss', 'address', 'process', 'always', 'sometimes'];
+    if (irregular.includes(verb.toLowerCase())) return full;
+    return `${pronoun}${adverb || ''} ${verb}`;
+  });
+
+  return out;
+}
+
+// ------------------------------------------------------------
+// Relationship tone profiles
+// ------------------------------------------------------------
+// Each profile controls warmth, length, and which phrase pools
+// to draw from when building scripts.
+
+const RELATIONSHIP_PROFILES = {
+  'Partner': { tone: 'warm', warmthOpeners: true, category: 'personal' },
+  'Parent': { tone: 'short', warmthOpeners: false, category: 'family' },
+  'Adult child': { tone: 'warm-short', warmthOpeners: true, category: 'family' },
+  'Friend': { tone: 'warm', warmthOpeners: true, category: 'personal' },
+  'Sibling': { tone: 'warm-short', warmthOpeners: true, category: 'family' },
+  'Client or customer': { tone: 'professional', warmthOpeners: false, category: 'professional' },
+  'Coworker': { tone: 'professional', warmthOpeners: false, category: 'professional' },
+  'Boss or authority figure': { tone: 'professional', warmthOpeners: false, category: 'professional' },
+  'Community member': { tone: 'clean', warmthOpeners: false, category: 'professional' },
+  'Someone who guilt-trips me': { tone: 'clean', warmthOpeners: false, category: 'energy' },
+  'Someone who wants constant access to me': { tone: 'clean', warmthOpeners: false, category: 'energy' },
+  'Ex-partner / someone I left': { tone: 'clean', warmthOpeners: false, category: 'safety' },
+  'Someone who scares me': { tone: 'clean', warmthOpeners: false, category: 'safety' },
+  'Someone who has threatened me': { tone: 'clean', warmthOpeners: false, category: 'safety' },
+  'Someone who controls my access to money, transportation, or people': { tone: 'clean', warmthOpeners: false, category: 'safety' },
+};
+
+function getProfile(who) {
+  return RELATIONSHIP_PROFILES[who] || { tone: 'clean', warmthOpeners: false, category: 'personal' };
+}
+
+// ------------------------------------------------------------
+// Opening phrases (warmth layer)
+// ------------------------------------------------------------
+
+const WARM_OPENERS = {
+  soft: [
+    'I care about you, and',
+    'I love you, and',
+    'I want to be honest with you, and',
+    'This isn\'t easy to bring up, but',
+  ],
+  firm: [
+    'I care about this relationship, and',
+    'I want to keep talking with you, and',
+    'I\'m not trying to start a fight, but',
+  ],
+  final: [
+    'I\'ve thought about this, and',
+    'I\'ve given this a lot of thought, and',
+  ],
+};
+
+const WARM_SHORT_OPENERS = {
+  soft: ['I love you, and', 'I know this might be hard to hear, but'],
+  firm: ['I care about you, and', 'I\'m not upset, but'],
+  final: ['I\'ve thought this through, and'],
+};
+
+// ------------------------------------------------------------
+// Core script builder
+// Formula: [Opener] + Name the behavior + Name the need + Follow-through
+// ------------------------------------------------------------
+
+function buildOpener(profile, level, seed) {
+  if (profile.tone === 'professional' || profile.tone === 'clean') {
+    return '';
+  }
+  if (profile.tone === 'warm-short') {
+    return pick(WARM_SHORT_OPENERS[level] || WARM_SHORT_OPENERS.firm, seed) + ' ';
+  }
+  return pick(WARM_OPENERS[level] || WARM_OPENERS.firm, seed) + ' ';
+}
+
+// Phrases describing the situation in a single clause, by level.
+// `sit` is always passed in lowercase (first letter lowercased).
+// Each frame produces ONE clause that can be joined with an opener
+// before it, and with ", and {need}" after it.
+const SITUATION_FRAMES = {
+  soft: [
+    (sit) => `when ${sit}, it doesn't feel good to me`,
+    (sit) => `${sit}, and I don't think you fully realize how much that affects me`,
+    (sit) => `it's been weighing on me that ${sit}`,
+  ],
+  firm: [
+    (sit) => `${sit}, and I've reached the point where I need that to change`,
+    (sit) => `this has come up before, and I need it to be different now, because ${sit}`,
+    (sit) => `when ${sit}, it crosses a line for me`,
+  ],
+  final: [
+    (sit) => `I've already brought this up before, and ${sit}, and nothing has changed`,
+    (sit) => `${sit}, and I'm not willing to keep going through this`,
+    (sit) => `this keeps happening, ${sit}, and I'm done revisiting it`,
+  ],
+  professional: [
+    (sit) => `${sit}`,
+    (sit) => `I've noticed that ${sit}`,
+  ],
+};
+
+// Need phrasing - how to express what they want going forward
+const NEED_PHRASES = {
+  'I want them to stop doing this.': {
+    soft: 'I need this to stop',
+    firm: 'I need this to stop',
+    final: 'this needs to stop, and I\'m not asking again',
+  },
+  'I want them to ask first.': {
+    soft: 'I\'d really appreciate it if you could check with me first from now on',
+    firm: 'I need you to ask before this happens, every time',
+    final: 'going forward, this only happens if you ask first, no exceptions',
+  },
+  'I want more space.': {
+    soft: 'I need a little more space than I\'ve been able to ask for',
+    firm: 'I need more space, and I need that to be respected',
+    final: 'I\'m taking more space, whether or not that\'s comfortable for you',
+  },
+  'I want less contact.': {
+    soft: 'I think we both need a bit less back and forth for a while',
+    firm: 'I need to scale back how often we\'re in touch',
+    final: 'I\'m stepping back from how much contact we have',
+  },
+  'I want them to speak to me respectfully.': {
+    soft: 'I need the way we talk to each other to feel kinder',
+    firm: 'I need to be spoken to with respect, every time, not just sometimes',
+    final: 'I\'m not continuing in conversations where I\'m not spoken to with respect',
+  },
+  'I want them to stop bringing up this topic.': {
+    soft: 'I\'d like us to leave that topic alone for now',
+    firm: 'I need that topic to be off the table',
+    final: 'that topic is closed, and I mean that',
+  },
+  'I want them to honor my no.': {
+    soft: 'when I say no, I need that to be enough',
+    firm: 'my no needs to be respected the first time, not after I repeat it',
+    final: 'no means no here, full stop, and I won\'t keep defending it',
+  },
+  'I want to end the conversation when it gets unhealthy.': {
+    soft: 'if a conversation starts to feel unhealthy, I\'d like to be able to pause it',
+    firm: 'when a conversation turns unhealthy, I\'m going to step away from it',
+    final: 'I\'m not staying in conversations that turn unhealthy anymore, I\'ll end them',
+  },
+  'I want to stop explaining myself.': {
+    soft: 'I\'d like to be able to say no without giving a whole explanation every time',
+    firm: 'I\'m not going to keep over-explaining my decisions',
+    final: 'I\'m done explaining and justifying this, it stands as it is',
+  },
+  'I want to stop being available all the time.': {
+    soft: 'I need a little breathing room around when I\'m available',
+    firm: 'I\'m not available all the time anymore, and I need that to be okay',
+    final: 'I\'m setting real limits on my availability, starting now',
+  },
+  'I want to end this relationship, client arrangement, or dynamic.': {
+    soft: 'I\'ve been thinking about whether this still works for me',
+    firm: 'I think it\'s time we wind this down',
+    final: 'I\'m ending this, and that decision is made',
+  },
+};
+
+function getNeedPhrase(needText, level, seed) {
+  const entry = NEED_PHRASES[needText];
+  if (entry) {
+    return entry[level] || entry.firm;
+  }
+  // For custom "Other" entries: "I want them to X" -> "I need you to X"
+  // Preserve "to X" (the verb phrase) rather than stripping it, since
+  // "I need X" only works as a noun phrase, not a verb phrase.
+  let raw = needText.trim().replace(/[.\s]+$/, '');
+  const wantMatch = raw.match(/^I want (?:them|him|her)\s+(to\s+.+)$/i);
+
+  let phrase; // a "you to ___" or noun-phrase form, used after "I need"
+
+  let isGerundPhrase = false;
+
+  if (wantMatch) {
+    // "to text me before showing up" -> "you to text me before showing up"
+    phrase = lowerFirst(shiftToSecondPerson(wantMatch[1]).replace(/^to\s+/i, 'you to '));
+  } else if (/^I want\s+to\s+/i.test(raw)) {
+    // "I want to stop feeling responsible for X" -> keep as "to ___"
+    const rest = raw.replace(/^I want\s+to\s+/i, '');
+    phrase = 'to ' + lowerFirst(shiftToSecondPerson(rest));
+  } else if (/^I want\s+/i.test(raw)) {
+    // "I want more honesty" -> "more honesty" used as a noun phrase
+    const rest = raw.replace(/^I want\s+/i, '');
+    phrase = lowerFirst(shiftToSecondPerson(rest));
+  } else if (/^[A-Za-z]+ing\b/.test(raw)) {
+    // Starts with a gerund ("Paying me back...") -> introduce with a colon
+    // since "I need paying..." doesn't read naturally
+    phrase = lowerFirst(shiftToSecondPerson(raw));
+    isGerundPhrase = true;
+  } else {
+    // Fallback: treat as a noun phrase / standalone statement
+    phrase = lowerFirst(shiftToSecondPerson(raw));
+  }
+
+  if (isGerundPhrase) {
+    const genericByLevel = {
+      soft: [`I'd really like it if we could move toward this: ${phrase}`],
+      firm: [`going forward, here's what I need: ${phrase}`],
+      final: [`here's where I've landed: ${phrase}, and that's not up for discussion`],
+    };
+    return pick(genericByLevel[level] || genericByLevel.firm, seed);
+  }
+
+  const genericByLevel = {
+    soft: [`I'd really like it if we could move toward this: I need ${phrase}`],
+    firm: [`going forward, I need ${phrase}`],
+    final: [`here's where I've landed: I need ${phrase}, and that's not up for discussion`],
+  };
+  return pick(genericByLevel[level] || genericByLevel.firm, seed);
+}
+
+// Follow-through phrasing by level and category
+const FOLLOW_THROUGH = {
+  soft: {
+    personal: [
+      'If this keeps happening, I\'ll bring it up again, but I really don\'t want this to become the pattern between us.',
+      'I\'m hoping we can find a different rhythm here, because I don\'t want this becoming a recurring thing between us.',
+    ],
+    family: [
+      'If this keeps happening, I\'ll bring it up again to remind you, because I don\'t want this to quietly become the pattern between us, and I\'d rather we catch it now and do something different.',
+      'If this keeps happening, I\'ll probably need to say something again, but I\'d rather we notice the pattern now and work on changing it before it becomes the way we relate to each other.',
+    ],
+    professional_workplace: [
+      'If this keeps coming up, I\'ll plan to raise it more formally.',
+    ],
+    professional_service: [
+      'If this keeps coming up, I\'ll plan to address it more formally.',
+    ],
+    energy: [
+      'If this keeps happening, I may need to take a step back from these conversations.',
+    ],
+    safety: [
+      'If this continues, I\'ll need to limit our contact further.',
+    ],
+  },
+  firm: {
+    personal: [
+      'If it keeps happening, I\'m going to step away from the conversation, and we can come back to it when things are calmer.',
+      'If this continues, I\'ll need to take some space until something changes.',
+    ],
+    family: [
+      'If it keeps happening, I\'m going to end the conversation, and we can try again another time.',
+      'If this continues, I\'ll need to step back for a while.',
+    ],
+    professional_workplace: [
+      'If this continues, I\'ll need to put it in writing and bring it to HR or the appropriate next step.',
+      'If this keeps happening, I\'ll need to escalate it through the proper channels.',
+    ],
+    professional_service: [
+      'If this continues, I\'ll need to put this in writing.',
+      'If this keeps happening, I\'ll need to revisit whether this arrangement still works.',
+    ],
+    energy: [
+      'If this keeps happening, I\'m going to mute the conversation or step away for a while.',
+      'If this continues, I won\'t keep being the place this lands.',
+    ],
+    safety: [
+      'If this continues, I\'m going to limit contact to what feels safe for me.',
+    ],
+  },
+  final: {
+    personal: [
+      'I\'ve already brought this up before, so if it happens again, I\'m going to take real space, not just for the day.',
+      'If this happens again, I\'m stepping back from this relationship for a while so I can figure out what I need.',
+    ],
+    family: [
+      'I\'ve said this before and it hasn\'t changed, so if it happens again, I\'m going to end the conversation and step back for a while.',
+    ],
+    professional_workplace: [
+      'If this continues, I\'ll need to take it further through HR or the appropriate channel.',
+      'I won\'t keep letting this slide. The next step is raising it formally.',
+    ],
+    professional_service: [
+      'If this continues, I\'ll need to end this working arrangement.',
+      'I won\'t be continuing this arrangement if this keeps happening.',
+    ],
+    energy: [
+      'I\'m not available for repeated conversations about this if nothing changes. I mean that.',
+      'If this keeps happening with nothing changing, I\'m going to need real distance from this.',
+    ],
+    safety: [
+      'I\'m limiting contact going forward, and I\'m not going to keep revisiting this.',
+    ],
+  },
+};
+
+// Relationships within the "professional" category that are workplace
+// hierarchy rather than a service arrangement the member controls.
+const WORKPLACE_RELATIONSHIPS = ['Coworker', 'Boss or authority figure'];
+
+function getFollowThroughCategory(ctx, profile) {
+  if (profile.category !== 'professional') return profile.category;
+  return WORKPLACE_RELATIONSHIPS.includes(ctx.who) ? 'professional_workplace' : 'professional_service';
+}
+
+function getFollowThrough(level, category, seed) {
+  const pool = (FOLLOW_THROUGH[level] && FOLLOW_THROUGH[level][category]) || FOLLOW_THROUGH[level].personal;
+  return pick(pool, seed);
+}
+
+// ------------------------------------------------------------
+// Main script generator
+// ------------------------------------------------------------
+
+function buildMainScript(ctx, level) {
+  const profile = getProfile(ctx.who);
+  const seed = ctx.who + ctx.situation + level;
+
+  const opener = buildOpener(profile, level, seed);
+
+  // Always work with a lowercase-first, second-person situation string.
+  // Members type situations in third person ("They criticize me...") but
+  // scripts speak directly to the person, so "they/them/their" becomes
+  // "you/you/your".
+  const situationRaw = lowerFirst(shiftToSecondPerson(trimEnd(ctx.situation)));
+
+  // Professional category gets a neutral situation frame regardless
+  // of boundary level; everyone else uses the level-based frame.
+  const framePool = (profile.category === 'professional')
+    ? SITUATION_FRAMES.professional
+    : (SITUATION_FRAMES[level] || SITUATION_FRAMES.firm);
+
+  const situationFrame = pick(framePool, seed + 'sit');
+  const situationClause = situationFrame(situationRaw);
+
+  const primaryNeed = ctx.needs[0];
+  const needLine = getNeedPhrase(primaryNeed, level, seed + 'need');
+
+  const followThroughCategory = getFollowThroughCategory(ctx, profile);
+  const followThrough = getFollowThrough(level, followThroughCategory, seed + 'follow');
+
+  let sentence1;
+  if (!opener) {
+    // No opener: situation clause starts the sentence, capitalize it.
+    sentence1 = capitalize(situationClause) + `, and ${needLine}.`;
+  } else {
+    // Opener present: opener + lowercase situation clause + need.
+    sentence1 = capitalize(opener + situationClause) + `, and ${needLine}.`;
+  }
+
+  return `${sentence1} ${followThrough}`.trim();
+}
+
+function capitalize(str) {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// ------------------------------------------------------------
+// Soft / Firm versions of whatever the main level is
+// ------------------------------------------------------------
+
+function buildAlternateVersions(ctx, mainLevel) {
+  const levels = ['soft', 'firm', 'final'];
+  const otherLevels = levels.filter(l => l !== mainLevel.toLowerCase());
+
+  return {
+    softer: mainLevel.toLowerCase() === 'soft' ? null : buildMainScript(ctx, mainLevel.toLowerCase() === 'final' ? 'firm' : 'soft'),
+    firmer: mainLevel.toLowerCase() === 'final' ? null : buildMainScript(ctx, mainLevel.toLowerCase() === 'soft' ? 'firm' : 'final'),
+  };
+}
+
+// ------------------------------------------------------------
+// "What you're really asking for"
+// ------------------------------------------------------------
+
+const ASKING_FOR_TEMPLATES = [
+  (need) => `You're asking for ${lowerFirst(need)}, nothing more dramatic than that, even though it might feel like a big ask to say out loud.`,
+  (need) => `Underneath everything, what you want is simple: ${lowerFirst(need)}.`,
+  (need) => `What you're really asking for is ${lowerFirst(need)}. That's it. That's the whole ask.`,
+];
+
+const NEED_SUMMARY = {
+  'I want them to stop doing this.': 'a specific behavior to stop',
+  'I want them to ask first.': 'a heads-up before plans involving you are made',
+  'I want more space.': 'more breathing room in this relationship',
+  'I want less contact.': 'less frequent contact for a while',
+  'I want them to speak to me respectfully.': 'basic respect, especially in hard moments',
+  'I want them to stop bringing up this topic.': 'a topic to be left alone',
+  'I want them to honor my no.': 'your no to actually be the end of the conversation',
+  'I want to end the conversation when it gets unhealthy.': 'the ability to step away when a conversation turns unhealthy',
+  'I want to stop explaining myself.': 'the ability to say no without justifying it every time',
+  'I want to stop being available all the time.': 'real limits on when you\'re available',
+  'I want to end this relationship, client arrangement, or dynamic.': 'an ending to something that no longer works for you',
+};
+
+function buildAskingFor(ctx, seed) {
+  const primaryNeed = ctx.needs[0];
+  const summary = NEED_SUMMARY[primaryNeed];
+  if (summary) {
+    return pick(ASKING_FOR_TEMPLATES, seed)(summary);
+  }
+
+  // Custom "Other" need: figure out what kind of phrase this is and
+  // build something that fits naturally after "what you're really asking".
+  let raw = primaryNeed.trim().replace(/[.\s]+$/, '');
+  const wantMatch = raw.match(/^I want (?:them|him|her)\s+(to\s+.+)$/i);
+
+  let askingPhrase;
+  if (wantMatch) {
+    // "to text me before showing up" -> "for you to text me before showing up"
+    askingPhrase = lowerFirst(shiftToSecondPerson(wantMatch[1]).replace(/^to\s+/i, 'for you to '));
+  } else if (/^I want\s+to\s+/i.test(raw)) {
+    const rest = raw.replace(/^I want\s+to\s+/i, '');
+    askingPhrase = 'to ' + lowerFirst(shiftToSecondPerson(rest));
+  } else if (/^I want\s+/i.test(raw)) {
+    askingPhrase = lowerFirst(shiftToSecondPerson(raw.replace(/^I want\s+/i, '')));
+  } else if (/^[A-Za-z]+ing\b/.test(raw)) {
+    askingPhrase = lowerFirst(shiftToSecondPerson(raw));
+  } else {
+    askingPhrase = lowerFirst(shiftToSecondPerson(raw));
+  }
+
+  const FALLBACK_ASKING_FOR = [
+    `Underneath everything, what you're really asking for is this: ${askingPhrase}.`,
+    `What you're really asking comes down to this: ${askingPhrase}.`,
+    `When you strip away the rest, this is the ask: ${askingPhrase}.`,
+  ];
+  return pick(FALLBACK_ASKING_FOR, seed);
+}
+
+// ------------------------------------------------------------
+// Fear -> reassurance (used in nervous system reminder)
+// ------------------------------------------------------------
+
+const FEAR_REASSURANCE = {
+  'They\'ll get mad.': 'If they get upset, that\'s information about them, not proof that you did something wrong.',
+  'They\'ll leave.': 'If someone leaves because you asked for basic respect, that tells you something important about what was actually holding the relationship together.',
+  'They\'ll think I\'m selfish.': 'Having a boundary doesn\'t make you selfish. It means you\'ve stopped volunteering your peace to keep someone else comfortable.',
+  'They\'ll say I\'m too sensitive.': 'You don\'t need someone else to agree with how you feel in order for your feelings to be valid.',
+  'They\'ll guilt-trip me.': 'Guilt is a familiar feeling for a lot of us, especially if we grew up believing other people\'s comfort came before our own. It doesn\'t mean you\'re doing something wrong, it often just means you\'re doing something new.',
+  'They\'ll stop loving me.': 'Love that depends on you never having needs isn\'t really love with room for you in it.',
+  'They\'ll talk badly about me.': 'What people say when you\'re not in the room says more about them than it does about you.',
+  'They\'ll punish me with silence.': 'Silence can feel unbearable, especially if it\'s been used against you before. It\'s still not a reason to take back something true.',
+  'They\'ll make me responsible for their feelings.': 'You can care about someone\'s feelings without taking responsibility for managing them.',
+  'They\'ll argue until I give in.': 'You don\'t have to win the argument. You just have to not argue.',
+  'I\'ll feel mean.': 'Feeling mean and being mean are not the same thing. Most people who set their first real boundary feel a little mean. It usually fades faster than you\'d expect.',
+  'I\'ll freeze or backtrack.': 'If you freeze or soften it more than you planned, that\'s not failure, it\'s information. You can always come back to it.',
+  'I\'m not afraid. I\'m just ready.': 'That readiness matters. Trust it.',
+};
+
+function buildFearReassurances(ctx, seed) {
+  const fearTexts = ctx.fears.filter(f => FEAR_REASSURANCE[f]);
+  if (fearTexts.length === 0) return [];
+  return pickMany(fearTexts, Math.min(2, fearTexts.length), seed).map(f => FEAR_REASSURANCE[f]);
+}
+
+// ------------------------------------------------------------
+// Nervous system reminder
+// ------------------------------------------------------------
+
+const NERVOUS_SYSTEM_BASE = {
+  soft: 'You might feel a little shaky or unsure after you say this, even though it\'s soft. That\'s just your body noticing you did something a little different than usual.',
+  firm: 'Your body might feel shaky, tight in the chest, or strangely guilty after you say this, especially if you\'re used to keeping the peace. That doesn\'t mean the boundary was wrong. It often means your system is recalibrating to a new normal.',
+  final: 'This one might land heavier in your body than the others. You may feel grief, relief, guilt, or all three at once, sometimes within the same hour. None of that means you made the wrong call. Endings tend to feel big in the body even when they\'re right.',
+};
+
+function buildNervousSystemReminder(ctx, level, seed) {
+  const base = NERVOUS_SYSTEM_BASE[level.toLowerCase()] || NERVOUS_SYSTEM_BASE.firm;
+  const reassurances = buildFearReassurances(ctx, seed);
+  let text = base;
+  if (reassurances.length) {
+    text += ' ' + reassurances.join(' ');
+  }
+  return text;
+}
+
+// ------------------------------------------------------------
+// Pushback responses
+// ------------------------------------------------------------
+
+const PUSHBACK_RESPONSES = {
+  'They argue.': [
+    'I hear you, and I\'m not going to keep going back and forth on this. This is where I\'ve landed.',
+    'You don\'t have to agree with me for this to stand. I\'m not debating it.',
+  ],
+  'They cry.': [
+    'I can see this is hard, and I\'m not trying to hurt you. My answer is still the same.',
+    'I understand this brings up a lot. That doesn\'t change what I need here.',
+  ],
+  'They guilt-trip.': [
+    'I hear that you\'re disappointed. My answer is still the same.',
+    'I\'m not saying this because I don\'t care. I\'m saying it because this is what works for me.',
+  ],
+  'They get angry.': [
+    'I\'m going to step away for now. We can talk again when things feel calmer.',
+    'I\'m not going to keep talking while things feel this heated. I\'ll be here when it\'s calmer.',
+  ],
+  'They say I\'m selfish.': [
+    'You\'re allowed to see it that way. I\'m still allowed to have this boundary.',
+    'Maybe it feels that way from where you\'re standing. I\'m still keeping it.',
+  ],
+  'They say I\'m too sensitive.': [
+    'You don\'t have to agree with how I feel for this to still be true for me.',
+    'I\'m not asking you to feel what I feel. I\'m asking you to respect it.',
+  ],
+  'They bring up everything they\'ve done for me.': [
+    'I see everything you\'ve done, and I\'m grateful for it. That doesn\'t change what I need right now.',
+    'That history matters to me. It doesn\'t change this.',
+  ],
+  'They ignore it.': [
+    'I\'ve already said what I need. Since this is still happening, I\'m going to follow through on what I said I\'d do.',
+    'I said this clearly already. I\'m not going to keep repeating it, I\'m going to act on it.',
+  ],
+  'They act like they don\'t understand.': [
+    'I\'ll say it again, simply: this is what I need, and it\'s not changing.',
+    'Let me put it plainly so there\'s no confusion: this is where I\'m at.',
+  ],
+  'They punish me with silence.': [
+    'I\'m not going to chase this or fill the silence by taking it back. I\'ll be here when we can talk normally again.',
+    'I notice the silence. I\'m not going to over-explain to fix it. I\'m still here when you\'re ready.',
+  ],
+  'They make themselves the victim.': [
+    'I can hold space for how hard this feels for you, and this still stands.',
+    'I\'m not trying to make you the bad guy here. This still stands.',
+  ],
+  'They agree, then keep doing it.': [
+    'We\'ve talked about this before, and it\'s still happening. I need to take it more seriously now, which means following through on what I said.',
+    'I noticed this is still happening after we talked. I\'m going to follow through this time, not just bring it up again.',
+  ],
+};
+
+function buildPushbackResponses(ctx, seed) {
+  const valid = ctx.pushback.filter(p => PUSHBACK_RESPONSES[p]);
+  return valid.map((behavior) => {
+    const pool = PUSHBACK_RESPONSES[behavior];
+    return {
+      behavior: behavior.replace(/\.$/, ''),
+      response: pick(pool, seed + behavior),
+    };
+  });
+}
+
+// ------------------------------------------------------------
+// "If they ignore it" guidance
+// ------------------------------------------------------------
+
+const IF_IGNORED = {
+  soft: {
+    personal: 'Try saying it once more, a little more plainly. You don\'t need to apologize for repeating yourself.',
+    family: 'It\'s okay to repeat this once, calmly, without extra explanation.',
+    professional_workplace: 'Follow up in writing so there\'s a record, and keep it brief and factual.',
+    professional_service: 'Follow up in writing so there\'s a record, and keep it brief and factual.',
+    energy: 'Notice the pattern. You\'re allowed to bring it up again with a little more clarity.',
+    safety: 'Notice the pattern, and consider whether more space is needed.',
+  },
+  firm: {
+    personal: 'Don\'t keep explaining. Repeat the boundary once, then follow through with the action you named, stepping away, ending the call, leaving the room.',
+    family: 'Don\'t over-explain. Say it once more, then follow through with what you said you\'d do.',
+    professional_workplace: 'Put it in writing, restate the expectation once, and follow through by raising it with HR or the appropriate next step.',
+    professional_service: 'Put it in writing, restate the expectation once, and follow through with whatever next step you outlined, whether that\'s adjusting the arrangement or stepping back.',
+    energy: 'You don\'t owe another explanation. Follow through, mute the conversation, end the call, or step away, exactly as you said you would.',
+    safety: 'Follow through with the limit you named. You don\'t need their agreement to do it.',
+  },
+  final: {
+    personal: 'This is where words become actions. Follow through completely, without a long explanation. The boundary has already been stated. Now it\'s about what you do.',
+    family: 'Don\'t restate it again and again. Follow through with the space or distance you named. Repetition without action just teaches the pattern to continue.',
+    professional_workplace: 'Move forward with the next step you named, whether that\'s HR, a formal complaint, or another channel. You\'ve already given the explanation you owe.',
+    professional_service: 'Move forward with ending the arrangement as planned. You\'ve already given the explanation you owe.',
+    energy: 'Follow through fully. At this point, more words won\'t change the pattern, only your actions will.',
+    safety: 'Prioritize your safety and follow through with the distance you\'ve decided on. You don\'t owe anyone an explanation for protecting yourself.',
+  },
+};
+
+function buildIfIgnored(ctx, level, seed) {
+  const profile = getProfile(ctx.who);
+  const category = getFollowThroughCategory(ctx, profile);
+  const table = IF_IGNORED[level.toLowerCase()] || IF_IGNORED.firm;
+  return table[category] || table.personal;
+}
+
+// ------------------------------------------------------------
+// Do-not-say swaps
+// ------------------------------------------------------------
+
+const GENERIC_DO_NOT_SAY = [
+  { instead_of: 'I\'m sorry, but', use: 'I need to let you know that' },
+  { instead_of: 'Is that okay?', use: 'That\'s where I\'m at.' },
+  { instead_of: 'I don\'t want to be mean, but', use: 'I want to be honest with you:' },
+  { instead_of: 'I know I\'m probably overreacting, but', use: 'I\'ve thought about this, and' },
+  { instead_of: 'If you don\'t mind,', use: 'Going forward,' },
+  { instead_of: 'Maybe we could possibly try', use: 'I need' },
+];
+
+function buildDoNotSay(ctx, seed) {
+  return pickMany(GENERIC_DO_NOT_SAY, 3, seed);
+}
+
+// ------------------------------------------------------------
+// The formula
+// ------------------------------------------------------------
+
+const FORMULA_TEXT = 'This script follows a simple shape you can reuse anytime: name what\'s happening, name what you need instead, and name what you\'ll do if it continues. Care is optional and depends on the relationship, but those three pieces are what give a boundary its backbone.';
+
+// ------------------------------------------------------------
+// Full result builder
+// ------------------------------------------------------------
+
+function generateBoundaryResult(ctx) {
+  const level = ctx.boundaryLevel.toLowerCase();
+  const seed = ctx.who + '|' + ctx.situation + '|' + ctx.needs.join(',') + '|' + level;
+
+  const mainScript = buildMainScript(ctx, level);
+  const alternates = buildAlternateVersions(ctx, ctx.boundaryLevel);
+  const askingFor = buildAskingFor(ctx, seed + 'ask');
+  const pushbackResponses = buildPushbackResponses(ctx, seed + 'pb');
+  const ifIgnored = buildIfIgnored(ctx, ctx.boundaryLevel, seed + 'ign');
+  const doNotSay = buildDoNotSay(ctx, seed + 'dns');
+  const nervousSystemReminder = buildNervousSystemReminder(ctx, ctx.boundaryLevel, seed + 'ns');
+
+  return {
+    askingFor,
+    mainScript,
+    softerVersion: alternates.softer,
+    firmerVersion: alternates.firmer,
+    pushbackResponses,
+    ifIgnored,
+    doNotSay,
+    nervousSystemReminder,
+    theFormula: FORMULA_TEXT,
+  };
+}
+
+// ------------------------------------------------------------
+// Script adjustments ("Make it softer" etc.)
+// ------------------------------------------------------------
+
+const ADJUSTMENT_HANDLERS = {
+  'Make it softer': (ctx) => ({
+    script: buildMainScript(ctx, ctx.boundaryLevel.toLowerCase() === 'final' ? 'firm' : 'soft'),
+    note: 'Sometimes a softer version is exactly right for a first try. You can always firm it up later if you need to.',
+  }),
+  'Make it firmer': (ctx) => ({
+    script: buildMainScript(ctx, ctx.boundaryLevel.toLowerCase() === 'soft' ? 'firm' : 'final'),
+    note: 'A firmer version doesn\'t mean a colder one. It just means there\'s less room for the boundary to get talked out of existence.',
+  }),
+  'Make it shorter': (ctx) => {
+    const result = generateBoundaryResult(ctx);
+    return {
+      script: shortenScript(result.mainScript),
+      note: 'Shorter often lands clearer. You don\'t need to fill every pause with explanation.',
+    };
+  },
+  'Make it more loving': (ctx) => {
+    const profile = getProfile(ctx.who);
+    const result = generateBoundaryResult(ctx);
+    // Strip any existing opener before adding a warmer one, so they don't stack
+    let script = result.mainScript
+      .replace(/^I love you, and /i, '')
+      .replace(/^I care about (you|this relationship), and /i, '')
+      .replace(/^I'm not trying to start a fight, but /i, '')
+      .replace(/^I want to be honest with you, and /i, '')
+      .replace(/^This isn'?t easy to bring up, but /i, '')
+      .replace(/^I've thought about this, and /i, '')
+      .replace(/^I've thought this through, and /i, '')
+      .replace(/^I'm not trying to keep talking with you, and /i, '')
+      .replace(/^I want to keep talking with you, and /i, '');
+    script = capitalize(script);
+
+    if (!profile.warmthOpeners) {
+      script = 'I care about how this lands with you. ' + lowerFirst(script);
+      script = capitalize(script);
+    } else {
+      script = 'I love you, and ' + lowerFirst(script);
+    }
+    return {
+      script,
+      note: 'Warmth and clarity can sit together. One doesn\'t cancel the other out.',
+    };
+  },
+  'Make it more professional': (ctx) => {
+    const result = generateBoundaryResult(ctx);
+    let script = result.mainScript
+      .replace(/^I love you, and /i, '')
+      .replace(/^I care about (you|this relationship), and /i, '')
+      .replace(/^I'm not trying to start a fight, but /i, '');
+    script = capitalize(script);
+    return {
+      script,
+      note: 'Clean and professional doesn\'t mean cold. It just keeps the focus on the situation rather than the relationship.',
+    };
+  },
+  'Make it less emotional': (ctx) => {
+    const result = generateBoundaryResult(ctx);
+    let script = result.mainScript
+      .replace(/^I love you, and /i, '')
+      .replace(/^I care about (you|this relationship), and /i, '')
+      .replace(/^I'm not trying to start a fight, but /i, '')
+      .replace(/^I've thought about this, and /i, '')
+      .replace(/^I've thought this through, and /i, '');
+    script = capitalize(script);
+    return {
+      script,
+      note: 'A flatter, more factual tone can be useful when emotions are already running high, yours or theirs.',
+    };
+  },
+  'Make it text-message friendly': (ctx) => {
+    const result = generateBoundaryResult(ctx);
+    const sentences = result.mainScript.split(/(?<=[.!?])\s+/);
+    let script = sentences[0];
+    if (!/[.!?]$/.test(script)) script += '.';
+    return {
+      script,
+      note: 'Texts land better short. You can always say more in person if it comes up.',
+    };
+  },
+  'Make it something I can say out loud': (ctx) => {
+    const result = generateBoundaryResult(ctx);
+    let script = result.mainScript.replace(/I'm going to/g, 'I\'ll').replace(/I am going to/g, 'I\'ll');
+    return {
+      script,
+      note: 'Try saying this one out loud a couple of times before you need it. It tends to feel less foreign by the third try.',
+    };
+  },
+  'Make it final': (ctx) => ({
+    script: buildMainScript(ctx, 'final'),
+    note: 'This version doesn\'t leave much room for back and forth, and that\'s the point. Use it when you\'re ready, not before.',
+  }),
+  'Give me a one-sentence version': (ctx) => {
+    const result = generateBoundaryResult(ctx);
+    const sentences = result.mainScript.split(/(?<=[.!?])\s+/);
+    return {
+      script: sentences[0],
+      note: 'Sometimes one sentence is all the moment can hold, and that\'s enough.',
+    };
+  },
+};
+
+function shortenScript(script) {
+  const sentences = script.split(/(?<=[.!?])\s+/);
+  if (sentences.length <= 1) return script;
+  return sentences.slice(0, Math.max(1, sentences.length - 1)).join(' ');
+}
+
+function adjustScriptTemplate(ctx, adjustment) {
+  const handler = ADJUSTMENT_HANDLERS[adjustment];
+  if (!handler) {
+    return { script: generateBoundaryResult(ctx).mainScript, note: '' };
+  }
+  return handler(ctx);
+}
+
+
+// ============================================================
+// Boundary Builder - app logic
+// ============================================================
+
+const state = {
+  step: 0,
+  who: null,
+  whoOther: '',
+  situation: '',
+  needs: [],
+  needsOther: '',
+  fears: [],
+  fearsOther: '',
+  boundaryLevel: null,
+  helpDecideAnswers: {},
+  pushback: [],
+  pushbackOther: '',
+  result: null,
+  strengthening: false,
+};
+
+// Relationships that trigger the safety pause
+const UNSAFE_WHO = [
+  'Ex-partner / someone I left',
+  'Someone who scares me',
+  'Someone who has threatened me',
+  'Someone who controls my access to money, transportation, or people',
+];
+
+// ============================================================
+// Step definitions
+// ============================================================
+
+const STEPS = [
+  'who',
+  'situation',
+  'needs',
+  'fears',
+  'boundaryLevel',
+  'pushback',
+  'safetyCheck', // conditional, rendered only if needed
+  'loading',
+  'results',
+];
+
+function totalVisibleSteps() {
+  // For the progress bar - 6 "real" question steps before results
+  return 6;
+}
+
+function currentVisibleStepNumber() {
+  const order = ['who', 'situation', 'needs', 'fears', 'boundaryLevel', 'pushback'];
+  const name = STEPS[state.step];
+  const idx = order.indexOf(name);
+  return idx === -1 ? totalVisibleSteps() : idx + 1;
+}
+
+// ============================================================
+// Rendering
+// ============================================================
+
+const card = document.getElementById('card');
+const progressFill = document.getElementById('progressFill');
+const progressText = document.getElementById('progressText');
+const progressCount = document.getElementById('progressCount');
+
+const PROGRESS_LABELS = {
+  who: 'Who this is with',
+  situation: 'What\'s happening',
+  needs: 'What you need',
+  fears: 'What you\'re afraid of',
+  boundaryLevel: 'How firm it needs to be',
+  pushback: 'If they push back',
+  safetyCheck: 'A quick pause',
+  loading: 'Finding the words',
+  results: 'Your boundary',
+};
+
+function updateProgress() {
+  const name = STEPS[state.step];
+  if (name === 'results' || name === 'loading') {
+    progressFill.style.width = '100%';
+    progressCount.textContent = '';
+  } else if (name === 'safetyCheck') {
+    progressCount.textContent = '';
+  } else {
+    const num = currentVisibleStepNumber();
+    const total = totalVisibleSteps();
+    progressFill.style.width = `${(num / total) * 100}%`;
+    progressCount.textContent = `${num} of ${total}`;
+  }
+  progressText.textContent = PROGRESS_LABELS[name] || '';
+}
+
+let isFirstRender = true;
+
+function render() {
+  updateProgress();
+  const name = STEPS[state.step];
+  card.innerHTML = '';
+  card.appendChild(RENDERERS[name]());
+  if (isFirstRender) {
+    isFirstRender = false;
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  } else {
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// After a pill selection re-renders the card in place, the Continue
+// button can end up below the fold. This nudges the page down so it's
+// visible without making the user hunt for it.
+function scrollToContinueButton() {
+  requestAnimationFrame(() => {
+    const continueBtn = card.querySelector('.btn-primary');
+    if (continueBtn) {
+      continueBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+}
+
+function goTo(stepName) {
+  const idx = STEPS.indexOf(stepName);
+  state.step = idx;
+  render();
+}
+
+function next() {
+  let idx = state.step + 1;
+  // Skip safety check unless needed
+  if (STEPS[idx] === 'safetyCheck' && !needsSafetyCheck()) {
+    idx++;
+  }
+  state.step = idx;
+  if (STEPS[state.step] === 'loading') {
+    render();
+    generateBoundary();
+  } else {
+    render();
+  }
+}
+
+function back() {
+  let idx = state.step - 1;
+  if (STEPS[idx] === 'safetyCheck' && !needsSafetyCheck()) {
+    idx--;
+  }
+  if (STEPS[idx] === 'loading') {
+    idx--;
+  }
+  state.step = Math.max(0, idx);
+  render();
+}
+
+function needsSafetyCheck() {
+  return UNSAFE_WHO.includes(state.who);
+}
+
+// ============================================================
+// Helper: build a step shell
+// ============================================================
+
+function buildStepShell({ eyebrow, title, helper, bodyEl, canContinue, onContinue, showBack = true, continueLabel = 'Continue' }) {
+  const wrap = document.createElement('div');
+  wrap.className = 'step active';
+
+  if (eyebrow) {
+    const eyebrowEl = document.createElement('p');
+    eyebrowEl.className = 'step-eyebrow';
+    eyebrowEl.textContent = eyebrow;
+    wrap.appendChild(eyebrowEl);
+  }
+
+  const h2 = document.createElement('h2');
+  h2.textContent = title;
+  wrap.appendChild(h2);
+
+  if (helper) {
+    const p = document.createElement('p');
+    p.className = 'step-helper';
+    p.textContent = helper;
+    wrap.appendChild(p);
+  }
+
+  wrap.appendChild(bodyEl);
+
+  const navRow = document.createElement('div');
+  navRow.className = 'nav-row';
+
+  if (showBack) {
+    const backBtn = document.createElement('button');
+    backBtn.className = 'btn btn-secondary';
+    backBtn.textContent = 'Back';
+    backBtn.addEventListener('click', back);
+    navRow.appendChild(backBtn);
+  } else {
+    const spacer = document.createElement('div');
+    navRow.appendChild(spacer);
+  }
+
+  const continueBtn = document.createElement('button');
+  continueBtn.className = 'btn btn-primary';
+  continueBtn.textContent = continueLabel;
+  continueBtn.disabled = !canContinue();
+  continueBtn.addEventListener('click', onContinue);
+  navRow.appendChild(continueBtn);
+
+  wrap.appendChild(navRow);
+
+  return wrap;
+}
+
+// ============================================================
+// Option list builder (single or multi select)
+// ============================================================
+
+function buildOptionList({ options, selectedValue, selectedArray, multi, onChange }) {
+  const list = document.createElement('div');
+  list.className = 'options';
+
+  options.forEach((opt) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'option-btn' + (multi ? ' multi' : '');
+    btn.setAttribute('role', multi ? 'checkbox' : 'radio');
+
+    const isSelected = multi
+      ? selectedArray.includes(opt)
+      : selectedValue === opt;
+
+    if (isSelected) btn.classList.add('selected');
+    btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+
+    const label = document.createElement('span');
+    label.textContent = opt;
+    btn.appendChild(label);
+
+    const check = document.createElement('span');
+    check.className = 'check';
+    check.setAttribute('aria-hidden', 'true');
+    btn.appendChild(check);
+
+    btn.addEventListener('click', () => {
+      onChange(opt, btn, list);
+    });
+
+    list.appendChild(btn);
+  });
+
+  return list;
+}
+
+// ============================================================
+// STEP RENDERERS
+// ============================================================
+
+const RENDERERS = {};
+
+// ---- Step 1: Who ----
+RENDERERS.who = function () {
+  const options = [
+    'Partner',
+    'Parent',
+    'Adult child',
+    'Friend',
+    'Sibling',
+    'Client or customer',
+    'Coworker',
+    'Boss or authority figure',
+    'Community member',
+    'Someone who guilt-trips me',
+    'Someone who wants constant access to me',
+    'Ex-partner / someone I left',
+    'Someone who scares me',
+    'Someone who has threatened me',
+    'Someone who controls my access to money, transportation, or people',
+    'Other',
+  ];
+
+  const body = document.createElement('div');
+
+  const list = buildOptionList({
+    options,
+    selectedValue: state.who,
+    multi: false,
+    onChange: (opt) => {
+      state.who = opt;
+      render();
+      scrollToContinueButton();
+    },
+  });
+  list.classList.add('options-grid');
+  body.appendChild(list);
+
+  if (state.who === 'Other') {
+    const input = document.createElement('input');
+    input.className = 'field';
+    input.style.minHeight = 'unset';
+    input.style.marginTop = '10px';
+    input.placeholder = 'Who is this boundary with?';
+    input.autocomplete = 'off';
+    input.value = state.whoOther;
+    input.addEventListener('input', (e) => {
+      state.whoOther = e.target.value;
+      refreshContinue();
+    });
+    body.appendChild(input);
+  }
+
+  function canContinue() {
+    if (!state.who) return false;
+    if (state.who === 'Other' && !state.whoOther.trim()) return false;
+    return true;
+  }
+
+  let continueBtnRef;
+  function refreshContinue() {
+    continueBtnRef.disabled = !canContinue();
+  }
+
+  const shell = buildStepShell({
+    eyebrow: 'Step 1',
+    title: 'Who is this boundary with?',
+    helper: 'This helps shape the tone, warm, clean, or firm.',
+    bodyEl: body,
+    canContinue,
+    onContinue: next,
+    showBack: false,
+  });
+
+  continueBtnRef = shell.querySelector('.btn-primary');
+  return shell;
+};
+
+// ---- Step 2: Situation ----
+RENDERERS.situation = function () {
+  const body = document.createElement('div');
+
+  const textarea = document.createElement('textarea');
+  textarea.className = 'field';
+  textarea.placeholder = 'Example: They make sarcastic comments about my parenting in front of other people.';
+  textarea.autocomplete = 'off';
+  textarea.value = state.situation;
+  textarea.addEventListener('input', (e) => {
+    state.situation = e.target.value;
+    continueBtnRef.disabled = !canContinue();
+  });
+  body.appendChild(textarea);
+
+  const hint = document.createElement('p');
+  hint.className = 'field-hint';
+  hint.textContent = 'Try to be specific. "They disrespect me" is harder to work with than "they make jokes about my weight in front of my family."';
+  body.appendChild(hint);
+
+  function canContinue() {
+    return state.situation.trim().length > 0;
+  }
+
+  const shell = buildStepShell({
+    eyebrow: 'Step 2',
+    title: 'What keeps happening?',
+    helper: 'Just answer what you can. No need to explain the whole backstory.',
+    bodyEl: body,
+    canContinue,
+    onContinue: next,
+  });
+
+  const continueBtnRef = shell.querySelector('.btn-primary');
+  return shell;
+};
+
+// ---- Step 3: Needs (multi-select) ----
+RENDERERS.needs = function () {
+  const options = [
+    'I want them to stop doing this.',
+    'I want them to ask first.',
+    'I want more space.',
+    'I want less contact.',
+    'I want them to speak to me respectfully.',
+    'I want them to stop bringing up this topic.',
+    'I want them to honor my no.',
+    'I want to end the conversation when it gets unhealthy.',
+    'I want to stop explaining myself.',
+    'I want to stop being available all the time.',
+    'I want to end this relationship, client arrangement, or dynamic.',
+    'Other',
+  ];
+
+  const body = document.createElement('div');
+
+  const helperNote = document.createElement('p');
+  helperNote.className = 'step-helper';
+  helperNote.style.marginBottom = '6px';
+  helperNote.innerHTML = 'Instead of focusing only on what you want them to stop, try to name what you need going forward. You can choose more than one.';
+  body.appendChild(helperNote);
+
+  const list = buildOptionList({
+    options,
+    selectedArray: state.needs,
+    multi: true,
+    onChange: (opt, btn) => {
+      const i = state.needs.indexOf(opt);
+      if (i === -1) {
+        state.needs.push(opt);
+      } else {
+        state.needs.splice(i, 1);
+      }
+      const isSelected = state.needs.includes(opt);
+      btn.classList.toggle('selected', isSelected);
+      btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+      refreshOtherField();
+      continueBtnRef.disabled = !canContinue();
+    },
+  });
+  body.appendChild(list);
+
+  const otherWrap = document.createElement('div');
+  otherWrap.style.marginTop = '10px';
+  body.appendChild(otherWrap);
+
+  function refreshOtherField() {
+    otherWrap.innerHTML = '';
+    if (state.needs.includes('Other')) {
+      const input = document.createElement('input');
+      input.className = 'field';
+      input.style.minHeight = 'unset';
+      input.placeholder = 'What do you want to change?';
+      input.autocomplete = 'off';
+      input.value = state.needsOther;
+      input.addEventListener('input', (e) => {
+        state.needsOther = e.target.value;
+        continueBtnRef.disabled = !canContinue();
+      });
+      otherWrap.appendChild(input);
+    }
+  }
+  refreshOtherField();
+
+  function canContinue() {
+    if (state.needs.length === 0) return false;
+    if (state.needs.includes('Other') && !state.needsOther.trim()) return false;
+    return true;
+  }
+
+  const shell = buildStepShell({
+    eyebrow: 'Step 3',
+    title: 'What do you want to change?',
+    bodyEl: body,
+    canContinue,
+    onContinue: next,
+  });
+
+  const continueBtnRef = shell.querySelector('.btn-primary');
+  return shell;
+};
+
+// ---- Step 4: Fears (multi-select) ----
+RENDERERS.fears = function () {
+  const options = [
+    'They\'ll get mad.',
+    'They\'ll leave.',
+    'They\'ll think I\'m selfish.',
+    'They\'ll say I\'m too sensitive.',
+    'They\'ll guilt-trip me.',
+    'They\'ll stop loving me.',
+    'They\'ll talk badly about me.',
+    'They\'ll punish me with silence.',
+    'They\'ll make me responsible for their feelings.',
+    'They\'ll argue until I give in.',
+    'I\'ll feel mean.',
+    'I\'ll freeze or backtrack.',
+    'I\'m not afraid. I\'m just ready.',
+    'Other',
+  ];
+
+  const body = document.createElement('div');
+
+  const list = buildOptionList({
+    options,
+    selectedArray: state.fears,
+    multi: true,
+    onChange: (opt, btn) => {
+      const i = state.fears.indexOf(opt);
+      if (i === -1) {
+        state.fears.push(opt);
+      } else {
+        state.fears.splice(i, 1);
+      }
+      const isSelected = state.fears.includes(opt);
+      btn.classList.toggle('selected', isSelected);
+      btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+      refreshOtherField();
+      continueBtnRef.disabled = !canContinue();
+    },
+  });
+  body.appendChild(list);
+
+  const otherWrap = document.createElement('div');
+  otherWrap.style.marginTop = '10px';
+  body.appendChild(otherWrap);
+
+  function refreshOtherField() {
+    otherWrap.innerHTML = '';
+    if (state.fears.includes('Other')) {
+      const input = document.createElement('input');
+      input.className = 'field';
+      input.style.minHeight = 'unset';
+      input.placeholder = 'What are you afraid will happen?';
+      input.autocomplete = 'off';
+      input.value = state.fearsOther;
+      input.addEventListener('input', (e) => {
+        state.fearsOther = e.target.value;
+        continueBtnRef.disabled = !canContinue();
+      });
+      otherWrap.appendChild(input);
+    }
+  }
+  refreshOtherField();
+
+  function canContinue() {
+    if (state.fears.length === 0) return false;
+    if (state.fears.includes('Other') && !state.fearsOther.trim()) return false;
+    return true;
+  }
+
+  const shell = buildStepShell({
+    eyebrow: 'Step 4',
+    title: 'What are you afraid will happen if you say it?',
+    helper: 'This helps the tool know what kind of support to build in alongside your script.',
+    bodyEl: body,
+    canContinue,
+    onContinue: next,
+  });
+
+  const continueBtnRef = shell.querySelector('.btn-primary');
+  return shell;
+};
+
+// ---- Step 5: Boundary level ----
+RENDERERS.boundaryLevel = function () {
+  const body = document.createElement('div');
+
+  if (state.boundaryLevel === 'help-decide') {
+    return renderHelpDecide();
+  }
+
+  const descriptions = {
+    'Soft': 'Use when they may not realize they\'re crossing a line, the relationship is generally safe, and you want to preserve warmth.',
+    'Firm': 'Use when this has happened before, you\'ve already hinted or asked, or the behavior is affecting your peace.',
+    'Final': 'Use when the pattern is repeated, harmful, or you\'re no longer willing to participate.',
+  };
+
+  const options = ['Soft', 'Firm', 'Final', 'Not sure - help me decide'];
+
+  const list = document.createElement('div');
+  list.className = 'options';
+
+  options.forEach((opt) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'option-btn';
+
+    const isHelpDecide = opt === 'Not sure - help me decide';
+    const isSelected = !isHelpDecide && state.boundaryLevel === opt;
+    if (isSelected) btn.classList.add('selected');
+
+    const labelWrap = document.createElement('span');
+    const title = document.createElement('span');
+    title.style.display = 'block';
+    title.style.fontWeight = '700';
+    title.textContent = opt === 'Not sure - help me decide' ? opt : `${opt} Boundary`;
+    labelWrap.appendChild(title);
+
+    if (descriptions[opt]) {
+      const desc = document.createElement('span');
+      desc.style.display = 'block';
+      desc.style.fontSize = '0.85rem';
+      desc.style.color = 'var(--text-soft)';
+      desc.style.marginTop = '4px';
+      desc.style.fontWeight = '400';
+      desc.textContent = descriptions[opt];
+      labelWrap.appendChild(desc);
+    }
+
+    btn.appendChild(labelWrap);
+
+    const check = document.createElement('span');
+    check.className = 'check';
+    btn.appendChild(check);
+
+    btn.addEventListener('click', () => {
+      if (isHelpDecide) {
+        state.boundaryLevel = 'help-decide';
+        state.helpDecideAnswers = {};
+        render();
+      } else {
+        state.boundaryLevel = opt;
+        render();
+      }
+    });
+
+    list.appendChild(btn);
+  });
+
+  body.appendChild(list);
+
+  function canContinue() {
+    return !!state.boundaryLevel && state.boundaryLevel !== 'help-decide';
+  }
+
+  const shell = buildStepShell({
+    eyebrow: 'Step 5',
+    title: 'What kind of boundary do you need?',
+    bodyEl: body,
+    canContinue,
+    onContinue: next,
+  });
+
+  return shell;
+};
+
+function renderHelpDecide() {
+  const body = document.createElement('div');
+
+  const questions = [
+    { key: 'happenedBefore', text: 'Has this happened more than once?' },
+    { key: 'alreadyAsked', text: 'Have you already asked them to stop?' },
+    { key: 'takesResponsibility', text: 'When you bring it up, do they take responsibility?' },
+    { key: 'punishesYou', text: 'Do they punish, guilt-trip, or attack you when you say no?' },
+    { key: 'feelUnsafe', text: 'Do you feel emotionally or physically unsafe?' },
+  ];
+
+  questions.forEach((q) => {
+    const qWrap = document.createElement('div');
+    qWrap.style.marginBottom = '16px';
+
+    const label = document.createElement('p');
+    label.style.margin = '0 0 8px';
+    label.style.fontWeight = '600';
+    label.style.fontSize = '0.95rem';
+    label.textContent = q.text;
+    qWrap.appendChild(label);
+
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.gap = '8px';
+
+    ['Yes', 'No'].forEach((ans) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'option-btn';
+      btn.style.flex = '1';
+      btn.style.justifyContent = 'center';
+      btn.textContent = ans;
+      const isSelected = state.helpDecideAnswers[q.key] === ans;
+      if (isSelected) btn.classList.add('selected');
+
+      btn.addEventListener('click', () => {
+        state.helpDecideAnswers[q.key] = ans;
+        render();
+      });
+
+      row.appendChild(btn);
+    });
+
+    qWrap.appendChild(row);
+    body.appendChild(qWrap);
+  });
+
+  const allAnswered = questions.every((q) => state.helpDecideAnswers[q.key]);
+
+  let recommendation = null;
+  if (allAnswered) {
+    const a = state.helpDecideAnswers;
+    if (a.feelUnsafe === 'Yes' || a.punishesYou === 'Yes' && a.alreadyAsked === 'Yes' && a.happenedBefore === 'Yes' && a.takesResponsibility === 'No') {
+      recommendation = 'Final';
+    } else if (a.happenedBefore === 'Yes' || a.alreadyAsked === 'Yes' || a.takesResponsibility === 'No') {
+      recommendation = 'Firm';
+    } else {
+      recommendation = 'Soft';
+    }
+
+    const recBox = document.createElement('div');
+    recBox.className = 'you-asking';
+    recBox.innerHTML = `<span class="label">Based on what you shared</span>A <strong>${recommendation} boundary</strong> may fit best here. You can use this, or pick a different level if it doesn't feel right.`;
+    body.appendChild(recBox);
+
+    const acceptRow = document.createElement('div');
+    acceptRow.className = 'options';
+    [recommendation, ...['Soft', 'Firm', 'Final'].filter(l => l !== recommendation)].forEach((level) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'option-btn';
+      btn.textContent = `${level} Boundary`;
+      btn.addEventListener('click', () => {
+        state.boundaryLevel = level;
+        render();
+      });
+      const check = document.createElement('span');
+      check.className = 'check';
+      btn.appendChild(check);
+      acceptRow.appendChild(btn);
+    });
+    body.appendChild(acceptRow);
+  }
+
+  const shell = buildStepShell({
+    eyebrow: 'Step 5',
+    title: 'Let\'s figure out what level fits.',
+    helper: 'A few quick yes or no questions.',
+    bodyEl: body,
+    canContinue: () => false,
+    onContinue: () => {},
+    showBack: true,
+  });
+
+  // Replace continue button area - this step doesn't use the standard continue
+  const navRow = shell.querySelector('.nav-row');
+  navRow.querySelector('.btn-primary').remove();
+
+  const backBtn = navRow.querySelector('.btn-secondary');
+  backBtn.textContent = 'Choose differently';
+  backBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+  }, { once: false });
+  // Override back behavior: go back to level selection, not previous step
+  backBtn.replaceWith(backBtn.cloneNode(true));
+  const newBackBtn = navRow.querySelector('.btn-secondary');
+  newBackBtn.addEventListener('click', () => {
+    state.boundaryLevel = null;
+    render();
+  });
+
+  return shell;
+}
+
+// ---- Step 6: Pushback (multi-select) ----
+RENDERERS.pushback = function () {
+  const options = [
+    'They argue.',
+    'They cry.',
+    'They guilt-trip.',
+    'They get angry.',
+    'They say I\'m selfish.',
+    'They say I\'m too sensitive.',
+    'They bring up everything they\'ve done for me.',
+    'They ignore it.',
+    'They act like they don\'t understand.',
+    'They punish me with silence.',
+    'They make themselves the victim.',
+    'They agree, then keep doing it.',
+    'I\'m not sure yet / this hasn\'t happened before.',
+  ];
+
+  const body = document.createElement('div');
+
+  const list = buildOptionList({
+    options,
+    selectedArray: state.pushback,
+    multi: true,
+    onChange: (opt, btn) => {
+      const i = state.pushback.indexOf(opt);
+      if (i === -1) {
+        state.pushback.push(opt);
+      } else {
+        state.pushback.splice(i, 1);
+      }
+      const isSelected = state.pushback.includes(opt);
+      btn.classList.toggle('selected', isSelected);
+      btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+      continueBtnRef.disabled = !canContinue();
+    },
+  });
+  body.appendChild(list);
+
+  function canContinue() {
+    return state.pushback.length > 0;
+  }
+
+  const shell = buildStepShell({
+    eyebrow: 'Step 6',
+    title: 'How do they usually respond when you set a boundary?',
+    helper: 'Choose as many as fit. This helps us prepare you for what might come next.',
+    bodyEl: body,
+    canContinue,
+    onContinue: next,
+    continueLabel: 'Build my boundary',
+  });
+
+  const continueBtnRef = shell.querySelector('.btn-primary');
+  return shell;
+};
+
+// ---- Safety check screen ----
+RENDERERS.safetyCheck = function () {
+  const wrap = document.createElement('div');
+  wrap.className = 'step active safety-screen';
+
+  const icon = document.createElement('div');
+  icon.innerHTML = `<svg class="safety-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <circle cx="32" cy="32" r="26" stroke="#a87f9a" stroke-width="2"/>
+    <path d="M32 20 V36" stroke="#a87f9a" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="32" cy="44" r="2" fill="#a87f9a"/>
+  </svg>`;
+  wrap.appendChild(icon);
+
+  const h2 = document.createElement('h2');
+  h2.textContent = 'Let\'s pause here for a moment.';
+  wrap.appendChild(h2);
+
+  const safetyText = document.createElement('div');
+  safetyText.className = 'safety-text';
+  safetyText.innerHTML = `If setting this boundary could put you in physical, financial, or emotional danger, this may not be a simple communication issue.
+  <br><br>
+  Your safest next step might be quiet planning, outside support, documentation, or help from someone you trust. You do not owe direct confrontation to someone who may harm you.
+  <br><br>
+  We can still build words for you, words you can use with a counselor, advocate, or trusted person, or simply to help you think clearly about what's happening. But please don't feel like you have to deliver this yourself if it isn't safe.`;
+  wrap.appendChild(safetyText);
+
+  const resources = document.createElement('p');
+  resources.className = 'resources';
+  resources.innerHTML = `If you're in the US and need support, the National Domestic Violence Hotline is available at 1-800-799-7233, or text "START" to 88788.`;
+  wrap.appendChild(resources);
+
+  const navRow = document.createElement('div');
+  navRow.className = 'nav-row';
+
+  const backBtn = document.createElement('button');
+  backBtn.className = 'btn btn-secondary';
+  backBtn.textContent = 'Back';
+  backBtn.addEventListener('click', back);
+  navRow.appendChild(backBtn);
+
+  const continueBtn = document.createElement('button');
+  continueBtn.className = 'btn btn-primary';
+  continueBtn.textContent = 'I understand, continue';
+  continueBtn.addEventListener('click', next);
+  navRow.appendChild(continueBtn);
+
+  wrap.appendChild(navRow);
+
+  return wrap;
+};
+
+// ---- Loading screen ----
+RENDERERS.loading = function () {
+  const wrap = document.createElement('div');
+  wrap.className = 'step active loading-screen';
+  wrap.innerHTML = `
+    <div class="spinner" role="status" aria-label="Loading"></div>
+    <p>Finding words that feel like you...</p>
+  `;
+  return wrap;
+};
+
+// ---- Results screen ----
+RENDERERS.results = function () {
+  const wrap = document.createElement('div');
+  wrap.className = 'step active results';
+
+  if (!state.result) {
+    wrap.innerHTML = `
+      <p class="step-eyebrow">Something went sideways</p>
+      <h2>We couldn't generate your boundary.</h2>
+      <div class="error-box">${state.errorMessage || 'Something went wrong while reaching out for your words. Please try again.'}</div>
+      <div class="nav-row">
+        <button class="btn btn-secondary" id="backFromError">Back</button>
+        <button class="btn btn-primary" id="retryBtn">Try again</button>
+      </div>
+    `;
+    setTimeout(() => {
+      document.getElementById('backFromError').addEventListener('click', back);
+      document.getElementById('retryBtn').addEventListener('click', () => {
+        generateBoundary();
+      });
+    }, 0);
+    return wrap;
+  }
+
+  const r = state.result;
+
+  const eyebrow = document.createElement('p');
+  eyebrow.className = 'step-eyebrow';
+  eyebrow.textContent = `Your ${state.boundaryLevel} Boundary`;
+  wrap.appendChild(eyebrow);
+
+  const h2 = document.createElement('h2');
+  h2.textContent = 'Here are your words.';
+  wrap.appendChild(h2);
+
+  // What you're really asking for
+  if (r.askingFor) {
+    const askBox = document.createElement('div');
+    askBox.className = 'you-asking';
+    askBox.innerHTML = `<span class="label">What you're really asking for</span>${escapeHtml(r.askingFor)}`;
+    wrap.appendChild(askBox);
+  }
+
+  // Main script hero
+  const hero = document.createElement('div');
+  hero.className = 'result-hero';
+  hero.innerHTML = `
+    <span class="script-label">Main Boundary Script</span>
+    <span class="quote-mark" aria-hidden="true">&ldquo;</span>
+    <p class="script-text">${escapeHtml(r.mainScript)}</p>
+  `;
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'copy-btn';
+  copyBtn.innerHTML = copyIconSvg() + ' Copy this script';
+  copyBtn.addEventListener('click', () => copyToClipboard(r.mainScript, copyBtn));
+  hero.appendChild(copyBtn);
+  wrap.appendChild(hero);
+
+  // Accordion sections
+  const accordion = document.createElement('div');
+  accordion.className = 'accordion';
+
+  if (r.softerVersion || r.firmerVersion) {
+    accordion.appendChild(buildAccordionItem({
+      title: 'Other versions of this script',
+      bodyBuilder: () => {
+        const d = document.createElement('div');
+        if (r.softerVersion) {
+          const softWrap = document.createElement('div');
+          softWrap.innerHTML = `<span class="sub-label">Softer Version</span><div class="script-block">${escapeHtml(r.softerVersion)}</div>`;
+          const useSoftBtn = document.createElement('button');
+          useSoftBtn.className = 'copy-btn use-btn';
+          useSoftBtn.textContent = 'Make this my script';
+          useSoftBtn.addEventListener('click', () => useAlternateAsMain('softer'));
+          softWrap.appendChild(useSoftBtn);
+          d.appendChild(softWrap);
+        }
+        if (r.firmerVersion) {
+          const firmWrap = document.createElement('div');
+          firmWrap.innerHTML = `<span class="sub-label">Firmer Version</span><div class="script-block">${escapeHtml(r.firmerVersion)}</div>`;
+          const useFirmBtn = document.createElement('button');
+          useFirmBtn.className = 'copy-btn use-btn';
+          useFirmBtn.textContent = 'Make this my script';
+          useFirmBtn.addEventListener('click', () => useAlternateAsMain('firmer'));
+          firmWrap.appendChild(useFirmBtn);
+          d.appendChild(firmWrap);
+        }
+        return d;
+      },
+    }));
+  }
+
+  if (r.pushbackResponses && r.pushbackResponses.length) {
+    accordion.appendChild(buildAccordionItem({
+      title: 'What to say if they push back',
+      bodyBuilder: () => {
+        const d = document.createElement('div');
+        r.pushbackResponses.forEach((pair) => {
+          const p = document.createElement('div');
+          p.className = 'pushback-pair';
+          p.innerHTML = `<div class="their-line">If they: ${escapeHtml(pair.behavior)}</div><div class="script-block">${escapeHtml(pair.response)}</div>`;
+          d.appendChild(p);
+        });
+        return d;
+      },
+    }));
+  }
+
+  if (r.ifIgnored) {
+    accordion.appendChild(buildAccordionItem({
+      title: 'What to do if the boundary is ignored',
+      bodyBuilder: () => {
+        const d = document.createElement('div');
+        d.innerHTML = `<p>${escapeHtml(r.ifIgnored)}</p>`;
+        return d;
+      },
+    }));
+  }
+
+  if (r.doNotSay && r.doNotSay.length) {
+    accordion.appendChild(buildAccordionItem({
+      title: 'Phrases to leave out (and what to say instead)',
+      bodyBuilder: () => {
+        const d = document.createElement('div');
+        r.doNotSay.forEach((pair) => {
+          const p = document.createElement('div');
+          p.className = 'pushback-pair';
+          p.innerHTML = `<div class="their-line">Instead of: "${escapeHtml(pair.instead_of)}"</div><div class="script-block">${escapeHtml(pair.use)}</div>`;
+          d.appendChild(p);
+        });
+        return d;
+      },
+    }));
+  }
+
+  if (r.nervousSystemReminder) {
+    accordion.appendChild(buildAccordionItem({
+      title: 'A reminder for your nervous system',
+      bodyBuilder: () => {
+        const d = document.createElement('div');
+        d.innerHTML = `<p>${escapeHtml(r.nervousSystemReminder)}</p>`;
+        return d;
+      },
+    }));
+  }
+
+  if (r.theFormula) {
+    accordion.appendChild(buildAccordionItem({
+      title: 'The formula behind this script',
+      bodyBuilder: () => {
+        const d = document.createElement('div');
+        d.innerHTML = `<p>${escapeHtml(r.theFormula)}</p>`;
+        return d;
+      },
+    }));
+  }
+
+  wrap.appendChild(accordion);
+
+  // Strengthener
+  const strengthener = document.createElement('div');
+  strengthener.className = 'strengthener';
+  strengthener.innerHTML = `<p class="step-eyebrow">Want to adjust it?</p>`;
+
+  const grid = document.createElement('div');
+  grid.className = 'strengthener-grid';
+
+  const strengthOptions = [
+    'Make it softer',
+    'Make it firmer',
+    'Make it shorter',
+    'Make it more loving',
+    'Make it more professional',
+    'Make it text-message friendly',
+    'Make it something I can say out loud',
+    'Give me a one-sentence version',
+  ];
+
+  strengthOptions.forEach((opt) => {
+    const btn = document.createElement('button');
+    btn.className = 'strength-btn';
+    btn.textContent = opt;
+    btn.addEventListener('click', () => adjustScript(opt, btn));
+    grid.appendChild(btn);
+  });
+
+  strengthener.appendChild(grid);
+  wrap.appendChild(strengthener);
+
+  // Adjusted result display area
+  const adjustedArea = document.createElement('div');
+  adjustedArea.id = 'adjustedArea';
+  wrap.appendChild(adjustedArea);
+
+  // Export / print
+  const exportRow = document.createElement('div');
+  exportRow.className = 'export-row';
+  const exportBtn = document.createElement('button');
+  exportBtn.className = 'export-btn';
+  exportBtn.innerHTML = printIconSvg() + ' Export or print this boundary';
+  exportBtn.addEventListener('click', () => exportBoundary());
+  exportRow.appendChild(exportBtn);
+  wrap.appendChild(exportRow);
+
+  // Restart
+  const restartRow = document.createElement('div');
+  restartRow.className = 'restart-row';
+  const restartBtn = document.createElement('button');
+  restartBtn.className = 'btn-text';
+  restartBtn.textContent = 'Start a new boundary';
+  restartBtn.addEventListener('click', restart);
+  restartRow.appendChild(restartBtn);
+  wrap.appendChild(restartRow);
+
+  return wrap;
+};
+
+function buildAccordionItem({ title, bodyBuilder, openByDefault = false }) {
+  const item = document.createElement('div');
+  item.className = 'accordion-item' + (openByDefault ? ' open' : '');
+
+  const header = document.createElement('button');
+  header.type = 'button';
+  header.className = 'accordion-header';
+  header.innerHTML = `
+    <span class="icon-wrap">
+      <svg class="leaf" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M4 20 C4 12 10 4 20 4 C20 14 12 20 4 20 Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        <path d="M4 20 C8 16 12 12 20 4" stroke="currentColor" stroke-width="1.5"/>
+      </svg>
+      <span>${title}</span>
+    </span>
+    <svg class="chev" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  `;
+
+  const body = document.createElement('div');
+  body.className = 'accordion-body';
+  body.appendChild(bodyBuilder());
+
+  header.addEventListener('click', () => {
+    item.classList.toggle('open');
+  });
+
+  item.appendChild(header);
+  item.appendChild(body);
+  return item;
+}
+
+function copyIconSvg() {
+  return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="vertical-align:-2px"><rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15H4a1 1 0 01-1-1V4a1 1 0 011-1h10a1 1 0 011 1v1" stroke="currentColor" stroke-width="2"/></svg>`;
+}
+
+function printIconSvg() {
+  return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="vertical-align:-2px"><path d="M6 9V2h12v7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="9" width="16" height="8" rx="1" stroke="currentColor" stroke-width="2"/><path d="M6 17v5h12v-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+// Builds the printable / exportable view of the current boundary script
+// and its accompanying tips, then opens the browser's print dialog
+// (which lets the person save it as a PDF or print it directly).
+function buildPrintArea() {
+  const r = state.result;
+  if (!r) return '';
+
+  let html = '';
+  html += `<div class="print-header">
+    <h1>Your Boundary Script</h1>
+    <p class="print-sub">${escapeHtml(state.boundaryLevel || '')} Boundary &middot; A Happy Hippie</p>
+  </div>`;
+
+  if (r.askingFor) {
+    html += `<div class="print-section">
+      <h2>What you're really asking for</h2>
+      <p>${escapeHtml(r.askingFor)}</p>
+    </div>`;
+  }
+
+  html += `<div class="print-section">
+    <h2>Your script</h2>
+    <p class="print-script">${escapeHtml(r.mainScript)}</p>
+  </div>`;
+
+  if (r.pushbackResponses && r.pushbackResponses.length) {
+    html += `<div class="print-section"><h2>What to say if they push back</h2>`;
+    r.pushbackResponses.forEach((pair) => {
+      html += `<p><em>If they ${escapeHtml(pair.behavior)}:</em><br>${escapeHtml(pair.response)}</p>`;
+    });
+    html += `</div>`;
+  }
+
+  if (r.ifIgnored) {
+    html += `<div class="print-section">
+      <h2>What to do if the boundary is ignored</h2>
+      <p>${escapeHtml(r.ifIgnored)}</p>
+    </div>`;
+  }
+
+  if (r.doNotSay && r.doNotSay.length) {
+    html += `<div class="print-section"><h2>Phrases to leave out</h2>`;
+    r.doNotSay.forEach((pair) => {
+      html += `<p>Instead of "${escapeHtml(pair.instead_of)}", try: ${escapeHtml(pair.use)}</p>`;
+    });
+    html += `</div>`;
+  }
+
+  if (r.nervousSystemReminder) {
+    html += `<div class="print-section">
+      <h2>A reminder for your nervous system</h2>
+      <p>${escapeHtml(r.nervousSystemReminder)}</p>
+    </div>`;
+  }
+
+  if (r.theFormula) {
+    html += `<div class="print-section">
+      <h2>The formula behind this script</h2>
+      <p>${escapeHtml(r.theFormula)}</p>
+    </div>`;
+  }
+
+  return html;
+}
+
+function exportBoundary() {
+  if (!state.result) return;
+  const printArea = document.getElementById('printArea');
+  printArea.innerHTML = buildPrintArea();
+  window.print();
+}
+
+function copyToClipboard(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.innerHTML;
+    btn.innerHTML = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = original;
+      btn.classList.remove('copied');
+    }, 1800);
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = '✓ Copied';
+  });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function restart() {
+  state.step = 0;
+  state.who = null;
+  state.whoOther = '';
+  state.situation = '';
+  state.needs = [];
+  state.needsOther = '';
+  state.fears = [];
+  state.fearsOther = '';
+  state.boundaryLevel = null;
+  state.helpDecideAnswers = {};
+  state.pushback = [];
+  state.pushbackOther = '';
+  state.result = null;
+  state.errorMessage = null;
+  render();
+}
+
+// ============================================================
+// Template-based generation (no API, fully client-side)
+// ============================================================
+
+function buildContextSummary() {
+  const who = state.who === 'Other' ? state.whoOther : state.who;
+  return {
+    who,
+    situation: state.situation,
+    needs: state.needs.map(n => n === 'Other' ? state.needsOther : n),
+    fears: state.fears.map(f => f === 'Other' ? state.fearsOther : f),
+    boundaryLevel: state.boundaryLevel,
+    pushback: state.pushback,
+  };
+}
+
+function generateBoundary() {
+  const ctx = buildContextSummary();
+
+  // Brief pause so the "finding the words" framing still feels intentional
+  // rather than instant/jarring, without any real delay.
+  setTimeout(() => {
+    try {
+      state.result = generateBoundaryResult(ctx);
+      state.errorMessage = null;
+    } catch (err) {
+      console.error('Boundary generation error:', err);
+      state.result = null;
+      state.errorMessage = 'Something went sideways while putting your words together. Please try again.';
+    }
+    goTo('results');
+  }, 450);
+}
+
+// Swaps the softer or firmer alternate script into the main result,
+// regenerating the rest of the result (pushback responses, nervous
+// system reminder, etc.) so everything stays consistent with the new
+// boundary level.
+function useAlternateAsMain(which) {
+  if (!state.result) return;
+
+  const currentLevel = (state.boundaryLevel || 'firm').toLowerCase();
+  let newLevel;
+  if (which === 'softer') {
+    newLevel = currentLevel === 'final' ? 'Firm' : 'Soft';
+  } else {
+    newLevel = currentLevel === 'soft' ? 'Firm' : 'Final';
+  }
+
+  state.boundaryLevel = newLevel;
+  const ctx = buildContextSummary();
+
+  try {
+    state.result = generateBoundaryResult(ctx);
+    state.errorMessage = null;
+  } catch (err) {
+    console.error('Error switching script version:', err);
+    return;
+  }
+
+  render();
+}
+
+function adjustScript(adjustment, btn) {
+  if (!state.result) return;
+
+  const ctx = buildContextSummary();
+
+  try {
+    const { script, note } = adjustScriptTemplate(ctx, adjustment);
+    const area = document.getElementById('adjustedArea');
+
+    const box = document.createElement('div');
+    box.className = 'result-hero';
+    box.style.marginTop = '16px';
+    box.innerHTML = `
+      <span class="script-label">${escapeHtml(adjustment)}</span>
+      <span class="quote-mark" aria-hidden="true">&ldquo;</span>
+      <p class="script-text">${escapeHtml(script)}</p>
+    `;
+
+    if (note) {
+      const noteEl = document.createElement('p');
+      noteEl.style.fontSize = '0.88rem';
+      noteEl.style.color = 'var(--text-soft)';
+      noteEl.style.marginTop = '12px';
+      noteEl.style.fontStyle = 'italic';
+      noteEl.textContent = note;
+      box.appendChild(noteEl);
+    }
+
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'copy-btn';
+    copyBtn.innerHTML = copyIconSvg() + ' Copy this version';
+    copyBtn.addEventListener('click', () => copyToClipboard(script, copyBtn));
+    box.appendChild(copyBtn);
+
+    area.prepend(box);
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } catch (err) {
+    console.error('Adjustment error:', err);
+    const area = document.getElementById('adjustedArea');
+    const errBox = document.createElement('div');
+    errBox.className = 'error-box';
+    errBox.style.marginTop = '16px';
+    errBox.textContent = 'We had trouble adjusting that version. Please try again.';
+    area.prepend(errBox);
+  }
+}
+
+// ============================================================
+// Privacy: clear state on close/navigate away
+// ============================================================
+
+window.addEventListener('beforeunload', () => {
+  Object.keys(state).forEach((key) => {
+    if (Array.isArray(state[key])) {
+      state[key] = [];
+    } else if (typeof state[key] === 'object' && state[key] !== null) {
+      state[key] = {};
+    } else if (typeof state[key] === 'string') {
+      state[key] = '';
+    } else {
+      state[key] = null;
+    }
+  });
+});
+
+// ============================================================
+// Init
+// ============================================================
+
+render();
+
+</script>
+</body>
+</html>
